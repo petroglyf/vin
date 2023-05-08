@@ -1,16 +1,3 @@
-/**
- *   ____  ____  _     _     ____  _____  ____  ____ 
- *  /  _ \/   _\/ \ /\/ \   /  _ \/__ __\/  _ \/  __\
- *  | / \||  /  | | ||| |   | / \|  / \  | / \||  \/|
- *  | \_/||  \_ | \_/|| |_/\| |-||  | |  | \_/||    /
- *  \____/\____/\____/\____/\_/ \|  \_/  \____/\_/\_\
- * 
- * Uses QT to read streaming media like webcams, online video, and movie files.
- * Streams to a torch tensor.
- * 
- * @author: ndepalma@alum.mit.edu
- * @license: MIT License
- */ 
 #include <iostream>
 #include <future>
 #include <stdio.h>

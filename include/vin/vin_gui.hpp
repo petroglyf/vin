@@ -1,4 +1,18 @@
 #pragma once
+/**
+ *           _________ _       
+ *  |\     /|\__   __/( (    /|
+ *  | )   ( |   ) (   |  \  ( |
+ *  ( (   ) )   | |   | (\ \) |
+ *   \ \_/ /    | |   | | \   |
+ *    \   /  ___) (___| )  \  |
+ *     \_/   \_______/|/    )_)
+ *                             
+ * Main window header
+ * 
+ * @author: ndepalma@alum.mit.edu
+ * @license: MIT License
+ */ 
 
 #include "vin/viz/ui_putitup.h"
 #include <QListWidget>

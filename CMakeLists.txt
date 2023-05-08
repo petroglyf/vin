@@ -53,15 +53,15 @@ option (BUILD_IMVIEWER "Build image viewer support" ON)
 find_package(PkgConfig REQUIRED)
 find_package(functional_dag REQUIRED)
 
-# pkg_check_modules(GST REQUIRED IMPORTED_TARGET gstreamer-1.0)
-
 set(CMAKE_AUTOUIC ON)  
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
-file (GLOB_RECURSE SOURCES src/main.cpp src/vin_gui.cpp vin_dag_manager.cpp)
+file (GLOB_RECURSE SOURCES src/main.cpp 
+                           src/vin_gui.cpp 
+                           src/vin_dag_manager.cpp)
 
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 

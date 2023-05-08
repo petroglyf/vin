@@ -1,4 +1,18 @@
 #pragma once
+/**
+ *           _________ _       
+ *  |\     /|\__   __/( (    /|
+ *  | )   ( |   ) (   |  \  ( |
+ *  ( (   ) )   | |   | (\ \) |
+ *   \ \_/ /    | |   | | \   |
+ *    \   /  ___) (___| )  \  |
+ *     \_/   \_______/|/    )_)
+ *                             
+ * QT movie support for VIN.
+ * 
+ * @author: ndepalma@alum.mit.edu
+ * @license: MIT License
+ */ 
 
 #include <mutex>
 #include <queue>
@@ -13,7 +27,7 @@
 
 
 #define TEST_LIB_EXPORT Q_DECL_EXPORT
-// TEST_LIB_EXPORT  player_event_thread
+
 class player_event_thread : public QThread, public fn_dag::module_source
 {
   Q_OBJECT

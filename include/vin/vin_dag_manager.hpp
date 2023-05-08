@@ -1,4 +1,18 @@
-#pragma once 
+#pragma once
+/**
+ *           _________ _       
+ *  |\     /|\__   __/( (    /|
+ *  | )   ( |   ) (   |  \  ( |
+ *  ( (   ) )   | |   | (\ \) |
+ *   \ \_/ /    | |   | | \   |
+ *    \   /  ___) (___| )  \  |
+ *     \_/   \_______/|/    )_)
+ *                             
+ * The fn-dag that VIN uses
+ * 
+ * @author: ndepalma@alum.mit.edu
+ * @license: MIT License
+ */ 
 
 #include <QAbstractItemModel>
 #include <filesystem>
