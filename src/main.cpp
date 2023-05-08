@@ -125,7 +125,6 @@ int main(int argc, char *argv[])
       } while(!SHOULD_QUIT);
     });
     
-    std::cout<< "QAPPLICATION START!!!!!!!!\n";
     app.exec();
     // TODO
     run_thread.join();

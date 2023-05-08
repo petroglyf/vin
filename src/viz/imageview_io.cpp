@@ -24,7 +24,6 @@ class QtViewer : public fn_dag::module_transmit {
     lay->addWidget(imagePanel);
 
     frame->setMinimumSize(800, 600);
-    std::cout << "SHOWING THREAD\n";
     frame->show();
   }
 

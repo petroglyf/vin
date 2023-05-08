@@ -72,7 +72,6 @@ int vin_dag::vin_add_node(const std::string &name,
   packed_stats.is_source = false;
   packed_stats.instantiation_options = *options;
 
-  std::cout << "Adding node\n";
   m_fn_manager.add_node(name, dag_node, parent_name);
   m_all_loaded_specs.push_back(packed_stats);
 
@@ -142,7 +141,7 @@ void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<
     std::stringstream buffer;
     buffer << ifstream.rdbuf();
     const std::string all_contents = buffer.str();
-    std::cout << "Got contents: " << all_contents << std::endl;
+
     fsys_deserialize(all_contents, library);
   }
   ifstream.close();

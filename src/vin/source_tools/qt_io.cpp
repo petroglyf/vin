@@ -17,8 +17,6 @@ player_event_thread::player_event_thread(std::string uri) :
 {
   m_specified_url = uri;
   start();
-
-  std::cout<< "started: " << isRunning() << std::endl;
 }
 void positionChanged2(qint64 position)
 {
@@ -99,10 +97,8 @@ void mediaStatusChanged(QMediaPlayer::MediaStatus status) {
 
 void player_event_thread::run()
 {
-  std::cout << "\ncreating media player\n";
   m_player = new QMediaPlayer;
 
-  std::cout << "Connecting\n";
   QObject::connect(m_player, &QMediaPlayer::positionChanged, 
                    positionChanged2);
   // QObject::connect(m_player, &QMediaPlayer::positionChanged, 
@@ -114,24 +110,12 @@ void player_event_thread::run()
   QObject::connect(m_player, &QMediaPlayer::errorOccurred, 
                    errorOccurred);
   
-
-  std::cout << "Set source\n";
-
-  // QUrl resource = QUrl::fromLocalFile("/Users/drobotnik/Movies/Chair-part.mp4");
-  // QUrl resource = QUrl::fromLocalFile("/Users/drobotnik/Movies/Project2.mov");
   QUrl resource = QUrl::fromLocalFile((m_specified_url).c_str());
   
-  std::cout << "Setting source" << resource.toDisplayString().toStdString() << "\n";
-  std::cout << "Is valid: "  << resource.isValid() << std::endl;
   m_player->setSource(resource);
 
-  
-
-  std::cout << "Creating sink\n";
   QVideoSink *sink = new QVideoSink(m_player);
-  std::cout << "Sink created\n";
   m_player->setVideoSink(sink);
-  std::cout << "Sink set\n";
 
   // QObject::connect(sink, &QVideoSink::videoFrameChanged, 
   //                  this, &player_event_thread::videoFrameChanged);
@@ -150,7 +134,6 @@ void player_event_thread::run()
   // });
   m_player->play();
   // QEventLoop loop;
-  std::cout << "event thread: " << eventDispatcher() << std::endl;
   exec();
   // loop.exec();
   std::cout << "DO NOT EXIT!!!!\n";
