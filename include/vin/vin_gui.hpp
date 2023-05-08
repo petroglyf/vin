@@ -68,7 +68,7 @@ private:
 };
 
 
-shared_ptr< vector<fs::directory_entry> > get_all_available_libs();
+shared_ptr< vector<fs::directory_entry> > get_all_available_libs(const fs::directory_entry &library_path);
 bool preflight_lib(const fs::path _lib_path);
 
 shared_ptr<lib_specification> fsys_load_lib(fs::path vin_lib);

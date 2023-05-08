@@ -1,9 +1,12 @@
 /**
- *   ____  ____  _     _     ____  _____  ____  ____ 
- *  /  _ \/   _\/ \ /\/ \   /  _ \/__ __\/  _ \/  __\
- *  | / \||  /  | | ||| |   | / \|  / \  | / \||  \/|
- *  | \_/||  \_ | \_/|| |_/\| |-||  | |  | \_/||    /
- *  \____/\____/\____/\____/\_/ \|  \_/  \____/\_/\_\
+ *           _________ _       
+ *  |\     /|\__   __/( (    /|
+ *  | )   ( |   ) (   |  \  ( |
+ *  ( (   ) )   | |   | (\ \) |
+ *   \ \_/ /    | |   | | \   |
+ *    \   /  ___) (___| )  \  |
+ *     \_/   \_______/|/    )_)
+ *                             
  * 
  * Vin's main entry point. Really this just triggers the model loading and the video feed. 
  * 
@@ -27,7 +30,8 @@
 #include "functional_dag/lib_utils.h"
 #include "vin/vin_gui.hpp"
 
-// #include "functional_dag/dag_impl.hpp"
+#define XSTR(x) STR(x)
+#define STR(x) #x
 
 std::atomic_bool SHOULD_QUIT;
 namespace fs = std::filesystem;
@@ -92,7 +96,11 @@ int main(int argc, char *argv[])
     std::cout << "Trying to open file " << targetFile.toStdString() << std::endl;
     std::cout << "Load file " << targetFile.toStdString() << std::endl;
 
-    auto all_libs = get_all_available_libs();
+    #ifdef VIN_LIB_DIR
+      auto all_libs = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
+    #else
+      auto all_libs = get_all_available_libs(fs::directory_entry("./lib"));
+    #endif
     std::vector<std::shared_ptr<lib_specification> > lib_specs;
     std::unordered_map<uint32_t, fn_dag::instantiate_fn> library;
     for(auto lib: *all_libs) {

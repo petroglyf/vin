@@ -7,6 +7,11 @@ project(vin LANGUAGES CXX )
 include(FindPkgConfig REQUIRED)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
+cmake_path(APPEND_STRING CMAKE_INSTALL_PREFIX "/lib/vin_libs/" OUTPUT_VARIABLE VIN_LIB_DIR)
+get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
+message("${VIN_LIB_DIR}")
+
 include_directories("include/")
 add_compile_options("-stdlib=libc++")
 
@@ -44,7 +49,7 @@ file (GLOB_RECURSE SOURCES src/main.cpp
 
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FUNCTIONALDAG_CXX_FLAGS} ${VIZ_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FUNCTIONALDAG_CXX_FLAGS} ${VIZ_CXX_FLAGS} -DVIN_LIB_DIR=${VIN_LIB_DIR}")
 
 ##########################################
 ###### Actual VIN specification  #########
@@ -88,12 +93,12 @@ if (BUILD_QTIO)
   target_link_libraries(imageview PRIVATE Qt6::Core Qt6::Widgets FunctionalDag::functional_dag)
 
   install(TARGETS imageview 
-      LIBRARY DESTINATION lib
-      ARCHIVE DESTINATION lib
+      LIBRARY DESTINATION lib/vin_libs
+      ARCHIVE DESTINATION lib/vin_libs
       RUNTIME DESTINATION bin)
   install(TARGETS qtio 
-      LIBRARY DESTINATION lib
-      ARCHIVE DESTINATION lib
+      LIBRARY DESTINATION lib/vin_libs
+      ARCHIVE DESTINATION lib/vin_libs
       RUNTIME DESTINATION bin)
 endif ()
 

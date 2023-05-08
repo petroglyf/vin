@@ -7,6 +7,9 @@
 #include <QCheckBox>
 #include <dlfcn.h>
 
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
 using namespace fn_dag;
 
 void total_tree_refresh(QListWidget *list) {
@@ -14,7 +17,11 @@ void total_tree_refresh(QListWidget *list) {
 
 void populate_lib_list(QListWidget *list) {
   std::this_thread::sleep_for(100ms); // Wait for the window to come up
-  auto lib_list = get_all_available_libs();
+#ifdef VIN_LIB_DIR
+  auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
+#else
+  auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
+#endif
   for(auto entry : *lib_list) {
     if(preflight_lib(entry.path())) {
       auto lib_spec = fsys_load_lib(entry.path());
