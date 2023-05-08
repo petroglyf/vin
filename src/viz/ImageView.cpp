@@ -10,10 +10,10 @@
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
  */ 
-#include "oculator/viz/ImageView.hpp"
+#include "vin/viz/ImageView.hpp"
 #include <iostream>
 
-namespace oculator {
+namespace vin {
   // Instead of generating this, we're just using what was in matplotlib.
   static const float __HOT_COLORMAP__[][4] = 
       {{0.0416, 0.0, 0.0, 1.0},

@@ -22,7 +22,6 @@ set(CMAKE_PREFIX_PATH "${_CELLAR_CMAKE_DIRS};${_QTOSX_CMAKE_DIR}")
 #############################################
 ####### Setting up compiler options #########
 #############################################
-#### bin2c for models during build
 include(FindPkgConfig REQUIRED)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,20 +39,13 @@ if (RELEASE)
   add_definitions(-Ofast)
 endif ()
 
-
-
 #############################################
 ####### User centered build options #########
 #############################################
 
 option (BUILD_VIN_FRONTEND "Build the frontend to VIN" ON)
-
-option (BUILD_GST "Build GST support" OFF)
-option (BUILD_VLC "Build VLC support" OFF)
 option (BUILD_QTIO "Build QTIO support" ON)
-
 option (BUILD_IMVIEWER "Build image viewer support" ON)
-option (BUILD_3DVIEWER "Build 3D viewer support" OFF)
 
 ##########################################
 ####### Find the needed packages #########
@@ -77,7 +69,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FUNCTIONALDAG_CXX_FLAGS} ${VIZ_CXX_FLA
 
 
 if (BUILD_VIN_FRONTEND)
-  file(GLOB HEADERS_TO_MOC_VIN include/oculator/viz/*.hpp)
+  file(GLOB HEADERS_TO_MOC_VIN include/vin/viz/*.hpp)
   qt6_wrap_cpp(PROCESSED_MOCS_VIN                                                                                                                                                                                                                                                                    
               ${HEADERS_TO_MOC_VIN}                                                   
               TARGET vin
@@ -88,43 +80,12 @@ if (BUILD_VIN_FRONTEND)
   target_link_libraries(vin PUBLIC Qt6::Core Qt6::Widgets FunctionalDag::functional_dag)
 endif()
 
-#####################################
-####### G Streamer library  #########
-#####################################
-if (BUILD_GST)
-  add_library(gst SHARED src/oculator/source_tools/gstio.cpp)
-  target_include_directories(gst PRIVATE "include/" ${GST_INCLUDE_DIRS})
-  target_compile_options(gst PRIVATE -fPIC -fvisibility=hidden)
-  target_link_directories(gst PRIVATE "/opt/homebrew/Cellar/gstreamer/1.22.0/lib" "/opt/homebrew/Cellar/glib/2.74.5/lib" "/opt/homebrew/Cellar/gettext/0.21.1/lib")
-  target_link_libraries(gst PRIVATE ${GST_LIBRARIES} filterdag)
-
-  add_custom_command(
-          TARGET gst POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory
-                  ${CMAKE_CURRENT_BINARY_DIR}/lib)
-
-  add_custom_command(
-          TARGET gst POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy
-                  ${CMAKE_CURRENT_BINARY_DIR}/libgst.dylib
-                  ${CMAKE_CURRENT_BINARY_DIR}/lib/)
-
-  add_custom_command(
-          TARGET gst POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E rm
-                  ${CMAKE_CURRENT_BINARY_DIR}/libgst.dylib)
-  set_property(
-          TARGET gst APPEND
-          PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libgst.dylib)
-endif ()
-
-
 #######################################
 ####### Image Viewer library  #########
 #######################################
 
 if (BUILD_IMVIEWER)
-  file(GLOB HEADERS_TO_MOC include/oculator/viz/ImageView.hpp)
+  file(GLOB HEADERS_TO_MOC include/vin/viz/ImageView.hpp)
   qt6_wrap_cpp(PROCESSED_MOCS                                                                                                                                                                                                                                                                    
                   ${HEADERS_TO_MOC}                                                   
                   TARGET imageview
@@ -157,47 +118,16 @@ if (BUILD_IMVIEWER)
 endif ()
 
 ##############################
-####### VLC library  #########
-##############################
-if (BUILD_VLC)
-  add_library(vlct SHARED src/oculator/source_tools/vlcio.cpp)
-  target_include_directories(vlct PRIVATE "include/" "/opt/homebrew/Cellar/libvlc-3.0.16-arm/64/include")
-  target_compile_options(vlct PRIVATE -fPIC -fvisibility=hidden)
-  target_link_directories(vlct PRIVATE "/opt/homebrew/Cellar/libvlc-3.0.16-arm/64/lib")
-  target_link_libraries(vlct PRIVATE filterdag vlc)
-
-  add_custom_command(
-          TARGET vlct POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory
-                  ${CMAKE_CURRENT_BINARY_DIR}/lib)
-
-  add_custom_command(
-          TARGET vlct POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy
-                  ${CMAKE_CURRENT_BINARY_DIR}/libvlct.dylib
-                  ${CMAKE_CURRENT_BINARY_DIR}/lib/)
-
-  add_custom_command(
-          TARGET vlct POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E rm
-                  ${CMAKE_CURRENT_BINARY_DIR}/libvlct.dylib)
-  set_property(
-          TARGET vlct APPEND
-          PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libvlct.dylib)
-          
-endif ()
-
-##############################
 ###### QTIO library  #########
 ##############################
 if (BUILD_QTIO)
-  file(GLOB QTIO_HEADERS_TO_MOC include/oculator/viz/QTVideoPlayer.hpp)
+  file(GLOB QTIO_HEADERS_TO_MOC include/vin/viz/QTVideoPlayer.hpp)
   qt6_wrap_cpp(QTIO_PROCESSED_MOCS                                                                                                                                                                                                                                                                    
                   ${QTIO_HEADERS_TO_MOC}                                                   
                   TARGET qtio
                   OPTIONS --no-notes) # Don't display a note for the headers which don't produce a moc_*.cpp
 
-  add_library(qtio SHARED src/oculator/source_tools/qtio.cpp ${QTIO_PROCESSED_MOCS})
+  add_library(qtio SHARED src/vin/source_tools/qtio.cpp ${QTIO_PROCESSED_MOCS})
   target_include_directories(qtio PRIVATE "include/" Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets /opt/homebrew/include)
   target_compile_options(qtio PRIVATE -fPIC -fvisibility=hidden)
   target_link_libraries(qtio PRIVATE Qt6::Core Qt6::Multimedia Qt6::MultimediaWidgets FunctionalDag::functional_dag)

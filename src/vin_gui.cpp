@@ -250,7 +250,7 @@ lib_specification::lib_specification() : lib_handle(nullptr), module_handle(null
     lib_handle = nullptr;
   }
 
-shared_ptr<lib_specification> fsys_load_lib(fs::path oculator_lib) {
-  shared_ptr<lib_specification> spec(new lib_specification{dlopen(oculator_lib.c_str(), RTLD_NOW)});
+shared_ptr<lib_specification> fsys_load_lib(fs::path vin_lib) {
+  shared_ptr<lib_specification> spec(new lib_specification{dlopen(vin_lib.c_str(), RTLD_NOW)});
   return spec;
 }

@@ -159,7 +159,7 @@ public:
 
     void retranslateUi(QMainWindow *PutItUp)
     {
-        PutItUp->setWindowTitle(QCoreApplication::translate("PutItUp", "Oculator visualizer", nullptr));
+        PutItUp->setWindowTitle(QCoreApplication::translate("PutItUp", "VIN visualizer", nullptr));
         actionNew->setText(QCoreApplication::translate("PutItUp", "New", nullptr));
 #if QT_CONFIG(shortcut)
         actionNew->setShortcut(QCoreApplication::translate("PutItUp", "Ctrl+N", nullptr));

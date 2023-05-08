@@ -1,6 +1,6 @@
 #pragma once
 
-#include "oculator/viz/ui_putitup.h"
+#include "vin/viz/ui_putitup.h"
 #include <QListWidget>
 #include "functional_dag/lib_utils.h"
 #include "vin/vin_dag_manager.hpp"
@@ -57,4 +57,4 @@ private:
 shared_ptr< vector<fs::directory_entry> > get_all_available_libs();
 bool preflight_lib(const fs::path _lib_path);
 
-shared_ptr<lib_specification> fsys_load_lib(fs::path oculator_lib);
+shared_ptr<lib_specification> fsys_load_lib(fs::path vin_lib);

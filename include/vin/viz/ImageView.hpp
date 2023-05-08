@@ -17,7 +17,7 @@
 
 #define TEST_LIB_EXPORT Q_DECL_EXPORT
 
-namespace oculator
+namespace vin
 {
   typedef enum {
     VIZ_RGB, VIZ_HEATMAP

@@ -21,9 +21,7 @@
 #include <QCoreApplication>
 #include <QVideoFrame>
 
-#include "oculator/viz/QTVideoPlayer.hpp"
-
-// using namespace oculator;
+#include "vin/viz/QTVideoPlayer.hpp"
 
 player_event_thread::player_event_thread(std::string uri) :
                             m_player(nullptr),

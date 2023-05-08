@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Oculator visualizer</string>
+   <string>Vin visualizer</string>
   </property>
   <widget class="QWidget" name="frame_layout">
    <layout class="QHBoxLayout" name="horizontalLayout">

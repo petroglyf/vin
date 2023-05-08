@@ -1,9 +1,9 @@
-#include "oculator/viz/ImageView.hpp"
+#include "vin/viz/ImageView.hpp"
 #include "functional_dag/lib_utils.h"
 #include <QHBoxLayout>
 #include <QCoreApplication>
 
-using namespace oculator;
+using namespace vin;
 class QtViewer : public fn_dag::module_transmit {
   public:
   QtViewer(): frame(nullptr), imagePanel(nullptr) {

@@ -5,7 +5,7 @@
  *  | \_/||  \_ | \_/|| |_/\| |-||  | |  | \_/||    /
  *  \____/\____/\____/\____/\_/ \|  \_/  \____/\_/\_\
  * 
- * Oculator's main entry point. Really this just triggers the model loading and the video feed. 
+ * Vin's main entry point. Really this just triggers the model loading and the video feed. 
  * 
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
