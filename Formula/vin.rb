@@ -4,7 +4,7 @@ class Vin < Formula
   desc "Executable for managing filtergraphs for vision"
   homepage "https://github.com/petrogly-ph/vin"
   url "https://github.com/petrogly-ph/vin/archive/refs/tags/brew.tar.gz"
-  sha256 "74f8d3301e713c47c265899316c92627281d923d960bb3a1aa7f4f4c73542682"
+  sha256 "30dd13e8d19e878e1de783055075ba677b638c531eadb826816b27642323f0db"
   license "MIT"
   version "1.0"
 
