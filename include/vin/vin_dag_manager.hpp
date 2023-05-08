@@ -26,14 +26,6 @@ namespace vin {
     void load_from_file(fs::path, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &);
     void initializeView(QTreeWidget *_view);
   
-    // int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    // int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    // QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    // index
-    // parent
-    // rowCount
-    // columnCount
-    // data
   private: 
     QTreeWidget *m_dag_tree;
     fn_dag::dag_manager<std::string> m_fn_manager;

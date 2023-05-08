@@ -21,7 +21,7 @@
 #include <QCoreApplication>
 #include <QVideoFrame>
 
-#include "vin/viz/QTVideoPlayer.hpp"
+#include "vin/viz/qt_io.hpp"
 
 player_event_thread::player_event_thread(std::string uri) :
                             m_player(nullptr),

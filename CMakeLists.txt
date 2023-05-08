@@ -121,13 +121,13 @@ endif ()
 ###### QTIO library  #########
 ##############################
 if (BUILD_QTIO)
-  file(GLOB QTIO_HEADERS_TO_MOC include/vin/viz/QTVideoPlayer.hpp)
+  file(GLOB QTIO_HEADERS_TO_MOC include/vin/viz/qt_io.hpp)
   qt6_wrap_cpp(QTIO_PROCESSED_MOCS                                                                                                                                                                                                                                                                    
                   ${QTIO_HEADERS_TO_MOC}                                                   
                   TARGET qtio
                   OPTIONS --no-notes) # Don't display a note for the headers which don't produce a moc_*.cpp
 
-  add_library(qtio SHARED src/vin/source_tools/qtio.cpp ${QTIO_PROCESSED_MOCS})
+  add_library(qtio SHARED src/vin/source_tools/qt_io.cpp ${QTIO_PROCESSED_MOCS})
   target_include_directories(qtio PRIVATE "include/" Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets /opt/homebrew/include)
   target_compile_options(qtio PRIVATE -fPIC -fvisibility=hidden)
   target_link_libraries(qtio PRIVATE Qt6::Core Qt6::Multimedia Qt6::MultimediaWidgets FunctionalDag::functional_dag)
