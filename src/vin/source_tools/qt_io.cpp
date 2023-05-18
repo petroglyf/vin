@@ -75,7 +75,9 @@ void player_event_thread::videoFrameChanged(const QVideoFrame &frame) {
   output_tensor->shape = new int64_t[]{rgb,height,width};
   output_tensor->strides = NULL;
   output_tensor->byte_offset = 0;
-  output_tensor->dtype = 0;
+  output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
+  output_tensor->dtype.bits = 8;
+  output_tensor->dtype.lanes = 3;
   output_tensor->data = new uint8_t[width*height*rgb];
   memcpy(output_tensor->data, bits, width*height*rgb*sizeof(uint8_t));
 
