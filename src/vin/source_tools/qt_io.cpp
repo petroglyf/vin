@@ -44,7 +44,9 @@ void errorOccurred(QMediaPlayer::Error error, const QString &errorString) {
 static int ic = 0;
 void player_event_thread::videoFrameChanged(const QVideoFrame &frame) {
   // std::cout << "Frame changed!\n";
-  const QImage &image = frame.toImage();
+  const QImage &imageSmall = frame.toImage();
+
+  QImage image = imageSmall.scaled(1024, 768,Qt::KeepAspectRatio);
 
   std::string filename = "img " + std::to_string(ic) + ".jpg";
   ic++;
@@ -73,6 +75,7 @@ void player_event_thread::videoFrameChanged(const QVideoFrame &frame) {
   output_tensor->shape = new int64_t[]{rgb,height,width};
   output_tensor->strides = NULL;
   output_tensor->byte_offset = 0;
+  output_tensor->dtype = 0;
   output_tensor->data = new uint8_t[width*height*rgb];
   memcpy(output_tensor->data, bits, width*height*rgb*sizeof(uint8_t));
 
