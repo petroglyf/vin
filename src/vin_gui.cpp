@@ -22,6 +22,7 @@ void populate_lib_list(QListWidget *list) {
 #else
   auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
 #endif
+  // auto lib_list = get_all_available_libs(fs::directory_entry("./"));
   for(auto entry : *lib_list) {
     if(preflight_lib(entry.path())) {
       auto lib_spec = fsys_load_lib(entry.path());

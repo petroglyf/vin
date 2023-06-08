@@ -30,6 +30,7 @@ endif ()
 ####### User centered build options #########
 #############################################
 option (BUILD_QTIO "Build QTIO support" ON)
+option (BUILD_QTOP "Build QTOP support" ON)
 
 ##########################################
 ####### Find the needed packages #########
@@ -97,6 +98,21 @@ if (BUILD_QTIO)
       ARCHIVE DESTINATION lib/vin_libs
       RUNTIME DESTINATION bin)
   install(TARGETS qtio 
+      LIBRARY DESTINATION lib/vin_libs
+      ARCHIVE DESTINATION lib/vin_libs
+      RUNTIME DESTINATION bin)
+endif ()
+
+##############################
+###### QTOP library  #########
+##############################
+if (BUILD_QTOP)
+  add_library(qtop SHARED src/vin/source_tools/qt_op.cpp)
+  target_include_directories(qtop PRIVATE "include/" Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets)
+  target_compile_options(qtop PRIVATE -fPIC -fvisibility=hidden)
+  target_link_libraries(qtop PRIVATE Qt6::Core Qt6::Multimedia Qt6::MultimediaWidgets FunctionalDag::functional_dag)
+
+  install(TARGETS qtop 
       LIBRARY DESTINATION lib/vin_libs
       ARCHIVE DESTINATION lib/vin_libs
       RUNTIME DESTINATION bin)

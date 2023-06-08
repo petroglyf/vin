@@ -75,6 +75,8 @@ int vin_dag::vin_add_node(const std::string &name,
   m_fn_manager.add_node(name, dag_node, parent_name);
   m_all_loaded_specs.push_back(packed_stats);
 
+  // m_fn_manager.printAllTrees();
+
   QList<QTreeWidgetItem *> parent_options = m_dag_tree->findItems(parent_name.c_str(), Qt::MatchFlag::MatchExactly);
   if( parent_options.size() != 1) 
   {

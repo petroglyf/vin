@@ -27,29 +27,20 @@
 
 
 #define TEST_LIB_EXPORT Q_DECL_EXPORT
-
-class player_event_thread : public QThread, public fn_dag::module_source
+typedef enum {
+  RESIZE
+} OP;
+class qt_op : public fn_dag::module_transmit
 {
-  Q_OBJECT
-
 public:
-  player_event_thread(std::string uri, int32_t width, int32_t height);
-  ~player_event_thread();
+  qt_op(OP op, int32_t width, int32_t height);
+  ~qt_op();
 
-  void run() override;
-  DLTensor *update() override;
-  void videoFrameChanged(const QVideoFrame &frame);
-  void positionChanged(qint64 position);
-
+  DLTensor *update(const DLTensor *) override;
+  
 private:
-    QMediaPlayer *m_player;
-    QVideoSink   *m_surface_for_player;
-    std::string m_specified_url;
-    uint32_t m_width;
-    uint32_t m_height;
-    std::mutex   m_mutex;
-    std::condition_variable   m_condition;
-    // torch::Tensor output_tensor;
-    std::queue<DLTensor *> m_frame_queue;
+  OP op_code;
+  uint32_t m_width;
+  uint32_t m_height;
 };
 

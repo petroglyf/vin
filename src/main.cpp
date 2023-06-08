@@ -96,11 +96,13 @@ int main(int argc, char *argv[])
     std::cout << "Trying to open file " << targetFile.toStdString() << std::endl;
     std::cout << "Load file " << targetFile.toStdString() << std::endl;
 
-    #ifdef VIN_LIB_DIR
-      auto all_libs = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
-    #else
-      auto all_libs = get_all_available_libs(fs::directory_entry("./lib"));
-    #endif
+  #ifdef VIN_LIB_DIR
+    auto all_libs = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
+  #else
+    auto all_libs = get_all_available_libs(fs::directory_entry("./lib"));
+  #endif
+    // auto all_libs = get_all_available_libs(fs::directory_entry("./"));
+    
     std::vector<std::shared_ptr<lib_specification> > lib_specs;
     std::unordered_map<uint32_t, fn_dag::instantiate_fn> library;
     for(auto lib: *all_libs) {
