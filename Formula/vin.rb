@@ -5,7 +5,7 @@ class Vin < Formula
   homepage "https://github.com/petrogly-ph/vin"
   url "https://github.com/petrogly-ph/vin/archive/refs/tags/brew.tar.gz"
   # url "file:///Users/drobotnik/projects/vin/"
-  sha256 "30dd13e8d19e878e1de783055075ba677b638c531eadb826816b27642323f0db"
+  sha256 "6a9cc1f1f977a8e241aa732e29817c97af2398859a6ac4aeb64ee7d992131000"
   license "MIT"
   version "1.0"
 
