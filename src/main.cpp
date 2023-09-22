@@ -94,11 +94,15 @@ int main(int argc, char *argv[])
     
     QString targetFile = parser.value(loadDagOption);
     std::cout << "Trying to open file " << targetFile.toStdString() << std::endl;
-    std::cout << "Load file " << targetFile.toStdString() << std::endl;
 
+    std::cout << "Finding all global modules...\n";
     auto all_libs = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
+    std::cout << "Success.\n";
+    std::cout << "Finding all local modules...\n";
     auto fallback_libs = get_all_available_libs(fs::directory_entry("./lib"));
-    
+
+    std::cout << "\nLoading library of modules.. !\n\t          <library-name>:<guid>\n";
+
     std::vector<std::shared_ptr<lib_specification> > lib_specs;
     std::unordered_map<uint32_t, fn_dag::instantiate_fn> library;
     for(auto lib: *all_libs) {
@@ -106,18 +110,21 @@ int main(int argc, char *argv[])
         std::shared_ptr<lib_specification> lib_handle = fsys_load_lib(lib);
         lib_specs.push_back(lib_handle);
         fn_dag::instantiate_fn create_fn = std::bind(__instantiate_fn_prototype, lib_handle, std::placeholders::_1);
-        std::cout << "Emplacing serial guid " << lib_handle->serial_id_guid << std::endl;
+        std::cout << "\tSuccess : " << lib_handle->lib_name << ":" << lib_handle->serial_id_guid << std::endl;
         library.emplace(lib_handle->serial_id_guid, create_fn);
+      } else {
+        std::cout << "\tFailure : " << lib << std::endl;
       }
     }
-
     for(auto lib: *fallback_libs) {
       if(preflight_lib(lib)) {
         std::shared_ptr<lib_specification> lib_handle = fsys_load_lib(lib);
         lib_specs.push_back(lib_handle);
         fn_dag::instantiate_fn create_fn = std::bind(__instantiate_fn_prototype, lib_handle, std::placeholders::_1);
-        std::cout << "Emplacing serial guid " << lib_handle->serial_id_guid << std::endl;
+        std::cout << "\tSuccess : " << lib_handle->lib_name << ":" << lib_handle->serial_id_guid << std::endl;
         library.emplace(lib_handle->serial_id_guid, create_fn);
+      } else {
+        std::cout << "\tFailure : " << lib << std::endl;
       }
     }
 

@@ -29,6 +29,9 @@ namespace vin
   {
     Q_OBJECT
     
+  private:
+    QList<QRect> m_rectangles_to_draw; // internal list of rectangles to draw per frame
+
   public:
     /**
      * Constructor for the visualizer
@@ -49,6 +52,22 @@ namespace vin
      * @param mode How to display it
      */
     void setTensor(const DLTensor &tensor, const VizMode mode);
+
+    /**
+     * drawBox
+     * 
+     * @param x top-x location of the box on the image
+     * @param y top-y location of the box on the image
+     * @param width width of the box on the image
+     * @param height height of the box on the image
+     */
+    void drawBox(int x, int y, int width, int height);
+
+    /**
+     * clearBoxOverlay
+     * 
+     */
+    void clearBoxOverlay();
   };
 }
 

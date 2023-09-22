@@ -7,7 +7,7 @@ using namespace vin;
 class QtViewer : public fn_dag::module_transmit {
   public:
   QtViewer(): frame(nullptr), imagePanel(nullptr) {
-    QApplication *app = (QApplication *)QCoreApplication::instance();
+    // QApplication *app = (QApplication *)QCoreApplication::instance();
     // QMetaObject::invokeMethod(app, "start", Qt::QueuedConnection, Q_ARG());
     QMetaObject::invokeMethod(qApp, [this](){
       this->start();
@@ -34,9 +34,33 @@ class QtViewer : public fn_dag::module_transmit {
 };
 
 DLTensor *QtViewer::update(const DLTensor *image) {
-  // std::cout << "RECEIVEDD<---------------\n";
-  imagePanel->setTensor(*image, VizMode::VIZ_RGB);
-  // frame->resize();
+  if(image != nullptr && image->ndim == 3) {
+    switch(image->shape[0]) {
+    case 1:
+      imagePanel->setTensor(*image, VizMode::VIZ_HEATMAP);
+      break;
+    case 3:
+      imagePanel->setTensor(*image, VizMode::VIZ_RGB);
+      break;
+    default:
+      std::cerr << "Unable to visualize image with n_channels: " << image->shape[0] << std::endl;
+    }
+    // imagePanel->drawBox(100, 100, 50, 50);
+  } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
+    // Each row is a bounding box
+    int64_t stride = image->strides[0];
+    int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
+    
+    imagePanel->clearBoxOverlay();
+    for(int64_t row = 0;row < image->shape[0];row++) {
+      int x = data_ptr[row*stride];
+      int y = data_ptr[row*stride+1];
+      int width = data_ptr[row*stride+2];
+      int height = data_ptr[row*stride+3];
+      imagePanel->drawBox(x, y, width, height);
+    }
+  }else
+    std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
   return nullptr;
 }
 
@@ -71,6 +95,7 @@ extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
 }
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {
+  (void)options;
   fn_dag::module_handler *viewer_out = new fn_dag::module_handler(new QtViewer());
   return (fn_dag::module *)viewer_out;
 }

@@ -22,7 +22,6 @@ namespace vin {
   class vin_dag {
   public:
     vin_dag();
-    vin_dag(const fs::path file_name);
     
     ~vin_dag();
 

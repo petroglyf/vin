@@ -10,11 +10,8 @@ using namespace fn_dag;
 
 namespace vin {
 
-vin_dag::vin_dag() : m_all_loaded_specs(), m_dag_tree(nullptr) {}
-
-vin_dag::vin_dag(const fs::path file_name) : m_all_loaded_specs(), m_dag_tree(nullptr) 
-{
-  // load_from_file(file_name);
+vin_dag::vin_dag() : m_dag_tree(nullptr), m_all_loaded_specs() {
+  m_fn_manager.run_single_threaded(true);
 }
 
 void vin_dag::initializeView(QTreeWidget *_view) {
@@ -148,6 +145,9 @@ void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<
   }
   ifstream.close();
  
+  std::cout << "Final loaded DAG:\n";
+  m_fn_manager.print_all_dags();
+  std::cout << "Setup complete\n\n";
 }
 
 // int vin_dag::rowCount(const QModelIndex &parent) const {

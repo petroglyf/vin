@@ -36,6 +36,7 @@ public:
   qt_op(OP op, int32_t width, int32_t height);
   ~qt_op();
 
+  virtual std::vector<std::string> const get_available_slots();
   DLTensor *update(const DLTensor *) override;
   
 private:

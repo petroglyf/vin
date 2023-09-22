@@ -12,27 +12,13 @@
 
 player_event_thread::player_event_thread(std::string uri, int32_t width, int32_t height) :
                             m_player(nullptr),
+                            m_surface_for_player(nullptr),
+                            m_specified_url(uri),
                             m_width(width),
                             m_height(height),
-                            m_specified_url(uri),
-                            m_surface_for_player(nullptr),
                             m_mutex{}
 {
   start();
-}
-void positionChanged2(qint64 position)
-{
-    // std::cout << "New position: " << position << std::endl;
-}
-
-void videoFrameChanged2(const QVideoFrame &frame)
-{
-  std::cout << "Just a test\n";
-}
-
-void player_event_thread::positionChanged(qint64 position)
-{
-    // std::cout << "New position: " << position << std::endl;
 }
 
 void stateChanged(QMediaPlayer::PlaybackState newState) {
@@ -40,7 +26,9 @@ void stateChanged(QMediaPlayer::PlaybackState newState) {
 }
 
 void errorOccurred(QMediaPlayer::Error error, const QString &errorString) {
-  std::cout << "ERROR: " << errorString.toStdString() << std::endl;
+  if(error != QMediaPlayer::Error::NoError) {
+    std::cout << "ERROR: " << errorString.toStdString() << std::endl;
+  }
 }
 
 static int ic = 0;
@@ -118,8 +106,8 @@ void player_event_thread::run()
 {
   m_player = new QMediaPlayer;
 
-  QObject::connect(m_player, &QMediaPlayer::positionChanged, 
-                   positionChanged2);
+  // QObject::connect(m_player, &QMediaPlayer::positionChanged, 
+  //                  positionChanged2);
   // QObject::connect(m_player, &QMediaPlayer::positionChanged, 
   //                  this, &player_event_thread::positionChanged);
   QObject::connect(m_player, &QMediaPlayer::playbackStateChanged, 
@@ -138,15 +126,11 @@ void player_event_thread::run()
 
   // QObject::connect(sink, &QVideoSink::videoFrameChanged, 
   //                  this, &player_event_thread::videoFrameChanged);
-  // QObject::connect(sink, &QVideoSink::videoFrameChanged, 
-  //                  videoFrameChanged2);
   QObject::connect(sink, &QVideoSink::videoFrameChanged, 
                    [this](const QVideoFrame &frame) {
                       // std::cout << "Just a test\n";
                       this->videoFrameChanged(frame);
                     });
-  // QObject::connect(m_player, &QMediaPlayer::positionChanged, 
-  //                  this, &player_event_thread::positionChanged);
   // QMetaObject::invokeMethod(qApp, [this](){
   //   m_player->play();
   //   exec();
@@ -169,6 +153,8 @@ DLTensor *player_event_thread::update() {
   std::string filename = "img " + std::to_string(ic) + ".jpg";
   ic++;
 
+  std::cout << "starting the update thread!\n";
+
   // unsigned char* img_data;
   // int height = output_tensor.size(0);
   // int width = output_tensor.size(1);
@@ -182,13 +168,16 @@ DLTensor *player_event_thread::update() {
 
   while(m_frame_queue.empty())
   {
+    std::cout << "Waiting for queue\n";
     // release lock as long as the wait and reaquire it afterwards.
     m_condition.wait(lock);
+    std::cout << "Continuing\n";
   }
   // std::cout <<" POPPING!!!\n";
   DLTensor *val = m_frame_queue.front();
   m_frame_queue.pop();
   // return new torch::Tensor(output_tensor);
+  std::cout << "source update called\n";
   return val;
   // tensor_promise = std::move(tensor_promise);
   // std::future<torch::Tensor *> tensor_future = tensor_promise.get_future();
@@ -226,9 +215,9 @@ extern "C" DL_EXPORT bool is_source() {
 
 extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
   shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  fn_dag::construction_option optionFilePath{fn_dag::STRING, "", 9185, "Local location of file", "Specify the file location of the video source."};
-  fn_dag::construction_option optionWidth{fn_dag::INT, "640", 9011, "Width of output image", "Specify the width of the output image in pixels. Set either of these to zero to keep the source resolution."};
-  fn_dag::construction_option optionHeight{fn_dag::INT, "480", 9012, "Height of output image", "Specify the height of the output image in pixels. Set either of these to zero to keep the source resolution."};
+  fn_dag::construction_option optionFilePath{fn_dag::STRING, {""}, 9185, "Local location of file", "Specify the file location of the video source."};
+  fn_dag::construction_option optionWidth{fn_dag::INT, {"640"}, 9011, "Width of output image", "Specify the width of the output image in pixels. Set either of these to zero to keep the source resolution."};
+  fn_dag::construction_option optionHeight{fn_dag::INT, {"480"}, 9012, "Height of output image", "Specify the height of the output image in pixels. Set either of these to zero to keep the source resolution."};
 
   options->push_back(optionFilePath);
   options->push_back(optionWidth);

@@ -12,16 +12,13 @@
 
 using namespace fn_dag;
 
-void total_tree_refresh(QListWidget *list) {
-}
-
 void populate_lib_list(QListWidget *list) {
   std::this_thread::sleep_for(100ms); // Wait for the window to come up
-#ifdef VIN_LIB_DIR
-  auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
-#else
+// #ifdef VIN_LIB_DIR
+//   auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
+// #else
   auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
-#endif
+// #endif
   // auto lib_list = get_all_available_libs(fs::directory_entry("./"));
   for(auto entry : *lib_list) {
     if(preflight_lib(entry.path())) {
@@ -190,13 +187,13 @@ void main_window::handle_create() {
     std::cout<< " new module\n" << new_module << std::endl;;
     if(new_module->get_type() == MODULE_TYPE::SOURCE) {
       std::cout << "it's a source\n" << typeid(new_module.get()).name();
-      module_source *src = new_module->get_handle_as_source();
+      module_source *src = new_module->get_slot_handle_as_source("yes");
       
       m_dag.vin_add_src(m_node_name, m_curr_lib_spec->serial_id_guid, m_curr_spec_handle, src);
 
     } else {
       std::cout << "it's a filter\n";
-      module_transmit *filter = new_module->get_handle_as_mapping();
+      module_transmit *filter = new_module->get_slot_handle_as_mapping("no");
       m_dag.vin_add_node(m_node_name, m_curr_lib_spec->serial_id_guid, filter, m_curr_spec_handle, m_parent_node_name);
     }
   }
@@ -211,7 +208,7 @@ void main_window::load() {
   std::cout << "Load\n";
 }
 
-lib_specification::lib_specification() : lib_handle(nullptr), module_handle(nullptr) {}
+lib_specification::lib_specification() : module_handle(nullptr), lib_handle(nullptr) {}
 
   lib_specification::lib_specification(void * const handle) {
     lib_handle = handle;

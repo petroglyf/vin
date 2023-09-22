@@ -9,11 +9,13 @@ set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 cmake_path(APPEND_STRING CMAKE_INSTALL_PREFIX "/lib/vin_libs/" OUTPUT_VARIABLE VIN_LIB_DIR)
-get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
+# get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
+get_filename_component(VIN_LIB_DIR "/opt/homebrew/Cellar/vin/1.0/lib/vin_libs" ABSOLUTE  )
+
 message("${VIN_LIB_DIR}")
 
 include_directories("include/")
-add_compile_options("-stdlib=libc++")
+add_compile_options("-stdlib=libc++" "-Wall" "-Wextra" "-Wpedantic" "-Werror")
 
 option (DEBUG "Build debug version" ON)
 option (RELEASE "Build release version" OFF)

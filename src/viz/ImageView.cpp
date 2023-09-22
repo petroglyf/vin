@@ -14,6 +14,7 @@
  * @license: MIT License
  */ 
 #include "vin/viz/ImageView.hpp"
+#include <QPainter>
 #include <iostream>
 
 namespace vin {
@@ -302,6 +303,8 @@ static int ic = 0;
     int width, height;
     uint8_t* img_data;
 
+    clearBoxOverlay();
+    drawBox(100, 100, 25, 25);
     switch(mode) {
       case VIZ_RGB:
         // Get the data from the torch tensor
@@ -320,8 +323,14 @@ static int ic = 0;
           // QImage image(width, height, QImage::Format_RGB888);
           // image.loadFromData(img_data, 3*width*sizeof(unsigned char)*(height-1));
           // setPixmap(QPixmap::fromImage(image).scaled(size(), Qt::KeepAspectRatio));
-          QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, QPixmap::fromImage(image)));
-          // setPixmap(QPixmap::fromImage(image));
+          QPixmap pixmap = QPixmap::fromImage(image);
+          QPainter painter(&pixmap);
+          painter.setRenderHint(QPainter::Antialiasing, true);
+          painter.drawRects(m_rectangles_to_draw);
+
+          QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
+          // QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, QPixmap::fromImage(image)));
+          
         }
         break;
 
@@ -332,15 +341,18 @@ static int ic = 0;
 
         height = tensor.shape[1];
         width = tensor.shape[2];
+
+        std::cout << "Using height: " << height << std::endl;
+        std::cout << "Using width: " << width << std::endl;
         img_data = reinterpret_cast<uint8_t *>(tensor.data);
         {   
           // Extract it to a Qt data structure
           QImage greyscale(img_data, width, height, sizeof(unsigned char)*width, QImage::Format_Grayscale8);
 
           // Rotate it to fit
-          QTransform myTransform;
-          myTransform.rotate(90);
-          greyscale = greyscale.transformed(myTransform).mirrored(true, false);
+          // QTransform myTransform;
+          // myTransform.rotate(90);
+          // greyscale = greyscale.transformed(myTransform).mirrored(true, false);
 
           // apply the heatmap
           QImage indexed_image = greyscale.convertToFormat(QImage::Format_Indexed8);
@@ -352,5 +364,13 @@ static int ic = 0;
         }
         break;
     }
+  }
+
+  void ImageView::drawBox(int x, int y, int width, int height) {
+    m_rectangles_to_draw.push_back(QRect(x, y, width, height));
+  }
+
+  void ImageView::clearBoxOverlay() {
+    m_rectangles_to_draw.clear();
   }
 }

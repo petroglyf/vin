@@ -21,6 +21,12 @@ qt_op::~qt_op()
 {
 }
 
+std::vector<std::string> const qt_op::get_available_slots() {
+  std::vector<std::string> slots;
+  slots.push_back("default");
+  return slots;
+}
+
 DLTensor *qt_op::update(const DLTensor *input_dltensor_) {
   QImage input_image((uchar *)input_dltensor_->data, 
                      input_dltensor_->shape[2], 
@@ -94,8 +100,8 @@ extern "C" DL_EXPORT bool is_source() {
 
 extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
   shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  fn_dag::construction_option optionWidth{fn_dag::INT, "640", 9011, "Width of output image", "Specify the width of the output image in pixels. Set either of these to zero to keep the source resolution."};
-  fn_dag::construction_option optionHeight{fn_dag::INT, "480", 9012, "Height of output image", "Specify the height of the output image in pixels. Set either of these to zero to keep the source resolution."};
+  fn_dag::construction_option optionWidth{fn_dag::INT, {"640"}, 9011, "Width of output image", "Specify the width of the output image in pixels. Set either of these to zero to keep the source resolution."};
+  fn_dag::construction_option optionHeight{fn_dag::INT, {"480"}, 9012, "Height of output image", "Specify the height of the output image in pixels. Set either of these to zero to keep the source resolution."};
 
   options->push_back(optionWidth);
   options->push_back(optionHeight);
@@ -125,3 +131,4 @@ extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *optio
   fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new qt_op(OP::RESIZE, width, height));
   return (fn_dag::module *)vlc_out;
 }
+
