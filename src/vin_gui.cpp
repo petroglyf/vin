@@ -5,34 +5,35 @@
 #include <QWidget>
 #include <QSpinBox>
 #include <QCheckBox>
-#include <dlfcn.h>
+
 
 #define XSTR(x) STR(x)
 #define STR(x) #x
 
 using namespace fn_dag;
 
-void populate_lib_list(QListWidget *list) {
+void populate_lib_list() { // QListWidget *list, vin::vin_library *library
   std::this_thread::sleep_for(100ms); // Wait for the window to come up
+  
 // #ifdef VIN_LIB_DIR
 //   auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
 // #else
-  auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
+  // auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
 // #endif
   // auto lib_list = get_all_available_libs(fs::directory_entry("./"));
-  for(auto entry : *lib_list) {
-    if(preflight_lib(entry.path())) {
-      auto lib_spec = fsys_load_lib(entry.path());
+  // for(auto entry : *lib_list) {
+  //   if(preflight_lib(entry.path())) {
+  //     auto lib_spec = fsys_load_lib(entry.path());
 
-      QListWidgetItem *new_item = new QListWidgetItem(lib_spec->lib_name.c_str());
-      new_item->setToolTip(lib_spec->detailed_description.c_str());
-      new_item->setStatusTip(lib_spec->simple_description.c_str());
-      new_item->setData(Qt::UserRole, QVariant::fromValue(lib_spec));
-      list->addItem(new_item);
-    } else {
-      std::cout << "Lib not loadable\n";
-    }
-  }
+  //     QListWidgetItem *new_item = new QListWidgetItem(lib_spec->lib_name.c_str());
+  //     new_item->setToolTip(lib_spec->detailed_description.c_str());
+  //     new_item->setStatusTip(lib_spec->simple_description.c_str());
+  //     new_item->setData(Qt::UserRole, QVariant::fromValue(lib_spec));
+  //     list->addItem(new_item);
+  //   } else {
+  //     std::cout << "Lib not loadable\n";
+  //   }
+  // }
 }
 
 void main_window::populate_options_panel(QListWidgetItem *value, QScrollArea *scroll_area) {
@@ -187,7 +188,7 @@ void main_window::handle_create() {
     std::cout<< " new module\n" << new_module << std::endl;;
     if(new_module->get_type() == MODULE_TYPE::SOURCE) {
       std::cout << "it's a source\n" << typeid(new_module.get()).name();
-      module_source *src = new_module->get_slot_handle_as_source("yes");
+      module_source *src = new_module->get_handle_as_source();
       
       m_dag.vin_add_src(m_node_name, m_curr_lib_spec->serial_id_guid, m_curr_spec_handle, src);
 
@@ -208,54 +209,4 @@ void main_window::load() {
   std::cout << "Load\n";
 }
 
-lib_specification::lib_specification() : module_handle(nullptr), lib_handle(nullptr) {}
 
-  lib_specification::lib_specification(void * const handle) {
-    lib_handle = handle;
-    load_lib();
-  }
-
-  void lib_specification::load_lib() {
-    using string_getter_fn = string (*)();
-    using bool_getter_fn = bool (*)();
-    using long_getter_fn = long (*)();
-    using options_getter_fn = shared_ptr<lib_options> (*)();
-    
-    void *guid_get_fn = dlsym(lib_handle, "get_serial_guid");
-    serial_id_guid = (long_getter_fn(guid_get_fn)());
-
-    void *name_fn = dlsym(lib_handle, "get_name");
-    lib_name = (string_getter_fn(name_fn)());
-    
-    void *desc_fn = dlsym(lib_handle, "get_simple_description");
-    simple_description = (string_getter_fn(desc_fn)());
-
-    desc_fn = dlsym(lib_handle, "get_detailed_description");
-    detailed_description = (string_getter_fn(desc_fn)());
-
-    void *is_src_fn = dlsym(lib_handle, "is_source");
-    is_source_module = (bool_getter_fn(is_src_fn)());
-
-    void *options_fn = dlsym(lib_handle, "get_options");
-    available_options = (options_getter_fn(options_fn)());
-
-    void *get_module_fn = dlsym(lib_handle, "get_module");
-    module_handle = module_getter_fn(get_module_fn);
-  }
-
-  shared_ptr<module> lib_specification::instantiate(const lib_options &options) {
-    module *new_module = module_handle(&options);
-    return shared_ptr<module>(new_module);
-  }
-
-  lib_specification::~lib_specification() {
-    if(lib_handle != nullptr) {
-      dlclose(lib_handle);
-    }
-    lib_handle = nullptr;
-  }
-
-shared_ptr<lib_specification> fsys_load_lib(fs::path vin_lib) {
-  shared_ptr<lib_specification> spec(new lib_specification{dlopen(vin_lib.c_str(), RTLD_NOW)});
-  return spec;
-}

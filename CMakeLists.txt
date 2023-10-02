@@ -48,7 +48,9 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 file (GLOB_RECURSE SOURCES src/main.cpp 
                            src/vin_gui.cpp 
-                           src/vin_dag_manager.cpp)
+                           src/vin_dag_manager.cpp
+                           src/utils/vin_library.cpp
+                           src/utils/lib_specification.cpp)
 
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 

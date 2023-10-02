@@ -38,10 +38,11 @@ namespace vin {
     void serialize(fs::path file_name);
     void load_from_file(fs::path, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &);
     void initializeView(QTreeWidget *_view);
+    void shutdown();
   
   private: 
     QTreeWidget *m_dag_tree;
-    fn_dag::dag_manager<std::string> m_fn_manager;
+    fn_dag::dag_manager<std::string> *m_fn_manager;
     vector<fn_dag::library_spec> m_all_loaded_specs;
     QTreeWidgetItem *m_rootitem;
   };

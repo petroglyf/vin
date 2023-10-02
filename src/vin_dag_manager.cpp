@@ -11,7 +11,7 @@ using namespace fn_dag;
 namespace vin {
 
 vin_dag::vin_dag() : m_dag_tree(nullptr), m_all_loaded_specs() {
-  m_fn_manager.run_single_threaded(true);
+  m_fn_manager->run_single_threaded(true);
 }
 
 void vin_dag::initializeView(QTreeWidget *_view) {
@@ -25,16 +25,25 @@ void vin_dag::initializeView(QTreeWidget *_view) {
   // a_child->setText(0,"another_child");
   // rootItem->addChild(a_child);
 
+  m_fn_manager = nullptr;
+
   m_dag_tree->addTopLevelItems(items);
 }
 
 vin_dag::~vin_dag() 
 {
-  // if(m_dag_tree != nullptr) 
-  // {
-  //   delete m_dag_tree;
-  //   m_dag_tree = nullptr;
-  // }
+  if(m_dag_tree != nullptr) 
+  {
+    delete m_dag_tree;
+    m_dag_tree = nullptr;
+  }
+
+  if(m_fn_manager != nullptr)
+  {
+    m_fn_manager->stahp();
+    delete m_fn_manager;
+    m_fn_manager = nullptr;
+  }
 }
 
 int vin_dag::vin_add_node(const std::string &name, 
@@ -69,7 +78,7 @@ int vin_dag::vin_add_node(const std::string &name,
   packed_stats.is_source = false;
   packed_stats.instantiation_options = *options;
 
-  m_fn_manager.add_node(name, dag_node, parent_name);
+  m_fn_manager->add_node(name, dag_node, parent_name);
   m_all_loaded_specs.push_back(packed_stats);
 
   // m_fn_manager.printAllTrees();
@@ -113,7 +122,7 @@ int vin_dag::vin_add_src(const std::string &name,
 
   QTreeWidgetItem *a_child = new QTreeWidgetItem(static_cast<QTreeWidget *>(nullptr), QStringList(QString(name.c_str())));
 
-  m_fn_manager.add_dag(name, dag_node, true);
+  m_fn_manager->add_dag(name, dag_node, true);
   m_all_loaded_specs.push_back(packed_stats);
 
   // m_dag_tree->addTopLevelItem(a_child);
@@ -132,6 +141,10 @@ void vin_dag::serialize(const fs::path file_name)
   ofstream.close();
 }
 
+void vin_dag::shutdown() {
+  m_fn_manager->stahp();
+}
+
 void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &library) 
 {
   std::cout << "Opening file " << file_name << std::endl;
@@ -140,13 +153,11 @@ void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<
     std::stringstream buffer;
     buffer << ifstream.rdbuf();
     const std::string all_contents = buffer.str();
-
-    fsys_deserialize(all_contents, library);
+    m_fn_manager = fsys_deserialize(all_contents, library);
   }
   ifstream.close();
  
-  std::cout << "Final loaded DAG:\n";
-  m_fn_manager.print_all_dags();
+  m_fn_manager->print_all_dags();
   std::cout << "Setup complete\n\n";
 }
 
