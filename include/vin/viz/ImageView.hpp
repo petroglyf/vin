@@ -15,6 +15,9 @@
  */ 
 
 #include <QtWidgets/QLabel>
+
+#include <mutex>
+
 #include <functional_dag/dlpack.h>
 
 #define TEST_LIB_EXPORT Q_DECL_EXPORT
@@ -31,6 +34,8 @@ namespace vin
     
   private:
     QList<QRect> m_rectangles_to_draw; // internal list of rectangles to draw per frame
+    std::vector< std::tuple<uint32_t, uint32_t> > m_gaze_pts;
+    std::mutex m_gaze_pts_mutex;
 
   public:
     /**
@@ -44,6 +49,8 @@ namespace vin
      * Deconstructor (used for cleanup)
      */
     ~ImageView();
+
+    void setGazePts(std::vector< std::tuple<uint32_t, uint32_t> > new_pts);
 
     /**
      * setTensor

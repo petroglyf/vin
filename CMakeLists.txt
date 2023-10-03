@@ -7,6 +7,7 @@ project(vin LANGUAGES CXX )
 include(FindPkgConfig REQUIRED)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_PREFIX_PATH "/opt/homebrew/include")
 
 cmake_path(APPEND_STRING CMAKE_INSTALL_PREFIX "/lib/vin_libs/" OUTPUT_VARIABLE VIN_LIB_DIR)
 # get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
@@ -32,7 +33,8 @@ endif ()
 ####### User centered build options #########
 #############################################
 option (BUILD_QTIO "Build QTIO support" ON)
-option (BUILD_QTOP "Build QTOP support" ON)
+option (BUILD_QTOP "Build QT ops support" ON)
+option (BUILD_GAZE_OPS "Build gaze ops support" ON)
 
 ##########################################
 ####### Find the needed packages #########
@@ -117,6 +119,21 @@ if (BUILD_QTOP)
   target_link_libraries(qtop PRIVATE Qt6::Core Qt6::Multimedia Qt6::MultimediaWidgets FunctionalDag::functional_dag)
 
   install(TARGETS qtop 
+      LIBRARY DESTINATION lib/vin_libs
+      ARCHIVE DESTINATION lib/vin_libs
+      RUNTIME DESTINATION bin)
+endif ()
+
+##############################
+###### Gaze library  #########
+##############################
+if (BUILD_GAZE_OPS)
+  add_library(gaze_ops SHARED src/vin/saccade_policy/saccade_policy_io.cpp)
+  target_include_directories(gaze_ops PRIVATE "include/")
+  target_compile_options(gaze_ops PRIVATE -fPIC -fvisibility=hidden)
+  target_link_libraries(gaze_ops PRIVATE Qt6::Core FunctionalDag::functional_dag)
+
+  install(TARGETS gaze_ops 
       LIBRARY DESTINATION lib/vin_libs
       ARCHIVE DESTINATION lib/vin_libs
       RUNTIME DESTINATION bin)

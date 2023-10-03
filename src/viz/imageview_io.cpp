@@ -47,18 +47,30 @@ DLTensor *QtViewer::update(const DLTensor *image) {
     }
     // imagePanel->drawBox(100, 100, 50, 50);
   } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
-    // Each row is a bounding box
-    int64_t stride = image->strides[0];
-    int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
-    
-    imagePanel->clearBoxOverlay();
-    for(int64_t row = 0;row < image->shape[0];row++) {
-      int x = data_ptr[row*stride];
-      int y = data_ptr[row*stride+1];
-      int width = data_ptr[row*stride+2];
-      int height = data_ptr[row*stride+3];
-      imagePanel->drawBox(x, y, width, height);
+    if(image->shape[1] == 2) {
+      std::cout << "Saccade points\n";
+      std::vector< std::tuple<uint32_t, uint32_t> > goal_points;
+      for(auto i=0;i < image->shape[0];i++) {
+        uint32_t x = reinterpret_cast<uint32_t*>(image->data)[i*2];
+        uint32_t y = reinterpret_cast<uint32_t*>(image->data)[i*2+1];
+        goal_points.push_back(std::make_tuple(x, y));
+      }
+      imagePanel->setGazePts(goal_points);
+    } else{
+      // Each row is a bounding box
+      int64_t stride = image->strides[0];
+      int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
+      
+      imagePanel->clearBoxOverlay();
+      for(int64_t row = 0;row < image->shape[0];row++) {
+        int x = data_ptr[row*stride];
+        int y = data_ptr[row*stride+1];
+        int width = data_ptr[row*stride+2];
+        int height = data_ptr[row*stride+3];
+        imagePanel->drawBox(x, y, width, height);
+      }
     }
+    
   }else
     std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
   return nullptr;

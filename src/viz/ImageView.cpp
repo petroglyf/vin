@@ -285,6 +285,11 @@ namespace vin {
   ImageView::~ImageView() {
   }
 
+  void ImageView::setGazePts(std::vector< std::tuple<uint32_t, uint32_t> > new_pts) {
+    std::scoped_lock fn_lock(m_gaze_pts_mutex);
+    m_gaze_pts.swap(new_pts);
+  }
+
   static QVector<QRgb> getHotColorMap() {
       QVector<QRgb> colorTable(256);
       for (int i = 0; i < 255; i++) {
@@ -304,7 +309,15 @@ static int ic = 0;
     uint8_t* img_data;
 
     clearBoxOverlay();
-    drawBox(100, 100, 25, 25);
+    {
+      std::scoped_lock draw_lock(m_gaze_pts_mutex);
+      for(auto coord_tuple : m_gaze_pts) {
+        auto [x, y] = coord_tuple;
+        drawBox(x, y, 25, 25);
+      }
+      
+    }
+    
     switch(mode) {
       case VIZ_RGB:
         // Get the data from the torch tensor
@@ -325,7 +338,9 @@ static int ic = 0;
           // setPixmap(QPixmap::fromImage(image).scaled(size(), Qt::KeepAspectRatio));
           QPixmap pixmap = QPixmap::fromImage(image);
           QPainter painter(&pixmap);
+          QPen pen(Qt::red, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
           painter.setRenderHint(QPainter::Antialiasing, true);
+          painter.setPen(pen);
           painter.drawRects(m_rectangles_to_draw);
 
           QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));

@@ -100,11 +100,6 @@ extern "C" DL_EXPORT bool is_source() {
 
 extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
   shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  fn_dag::construction_option optionWidth{fn_dag::INT, {"640"}, 9011, "Width of output image", "Specify the width of the output image in pixels. Set either of these to zero to keep the source resolution."};
-  fn_dag::construction_option optionHeight{fn_dag::INT, {"480"}, 9012, "Height of output image", "Specify the height of the output image in pixels. Set either of these to zero to keep the source resolution."};
-
-  options->push_back(optionWidth);
-  options->push_back(optionHeight);
   return options;
 }
 

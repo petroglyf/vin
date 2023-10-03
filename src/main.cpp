@@ -20,6 +20,8 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
 
 #include <QCommandLineParser>
 #include <QtWidgets/QApplication>
@@ -59,6 +61,8 @@ int main(int argc, char *argv[])
 
   // Process the actual command line arguments given by the user
   parser.process(app);
+
+  srand (time(NULL));
 
   print_banner();
 
