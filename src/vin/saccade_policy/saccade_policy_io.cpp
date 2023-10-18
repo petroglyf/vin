@@ -85,28 +85,43 @@ public:
           m_last_update_ms = timeSinceEpochMillisec();
         }
       case CONSTANT:
-        // move all of the points toward the goal points
-        for(uint32_t i = 0;i < m_npts;i++) {
-          std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
-            // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
-            int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
-            return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
-          };
-          prev_points[i*2] += get_delt(prev_points[i*2], prev_gpoints[i*2]);
-          prev_points[i*2+1] += get_delt(prev_points[i*2+1], prev_gpoints[i*2+1]);
-        }
+        // // move all of the points toward the goal points
+        // for(uint32_t i = 0;i < m_npts;i++) {
+        //   std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
+        //     // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
+        //     int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
+        //     return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
+        //   };
+        //   prev_points[i*2] += get_delt(prev_points[i*2], prev_gpoints[i*2]);
+        //   prev_points[i*2+1] += get_delt(prev_points[i*2+1], prev_gpoints[i*2+1]);
+        // }
         break;
       case SALIENCY:
         for(uint32_t i = 0;i < m_npts;i++) {
           uint64_t prev_state = ((uint64_t)prev_points[i*2] << 32) + prev_points[i*2+1];
+          
           uint64_t next_state = gradient_next_state(prev_state, _input_dltensor);
-          prev_points[i*2] = next_state >> 32;
-          prev_points[i*2+1] = next_state & ((uint64_t)std::numeric_limits<std::uint32_t>::max() << 32);
+          
+          prev_gpoints[i*2] = next_state >> 32;
+          prev_gpoints[i*2+1] = (next_state << 32) >> 32;
+          std::cout << "next state: " << (int)prev_points[i*2] << ", " << (int)prev_points[i*2+1] << std::endl;
         }
         break;
       default:
         std::cout << "skipping, defaulting to constant\n";
+        return nullptr;
     }
+    // move all of the points toward the goal points
+    for(uint32_t i = 0;i < m_npts;i++) {
+      std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
+        // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
+        int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
+        return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
+      };
+      prev_points[i*2] += get_delt(prev_points[i*2], prev_gpoints[i*2]);
+      prev_points[i*2+1] += get_delt(prev_points[i*2+1], prev_gpoints[i*2+1]);
+    }
+    
     memcpy(coords_out, prev_points, sizeof(uint32_t)*2*m_npts);
 
     return output_tensor;
@@ -159,6 +174,6 @@ extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {
   (void)options;
-  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(POLICY_TYPE::RANDOM, 3));
+  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(POLICY_TYPE::SALIENCY, 3));
   return (fn_dag::module *)vlc_out;
 }

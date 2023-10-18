@@ -338,7 +338,7 @@ static int ic = 0;
           // setPixmap(QPixmap::fromImage(image).scaled(size(), Qt::KeepAspectRatio));
           QPixmap pixmap = QPixmap::fromImage(image);
           QPainter painter(&pixmap);
-          QPen pen(Qt::red, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+          QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
           painter.setRenderHint(QPainter::Antialiasing, true);
           painter.setPen(pen);
           painter.drawRects(m_rectangles_to_draw);
@@ -374,8 +374,17 @@ static int ic = 0;
           indexed_image.setColorTable(getHotColorMap());
           indexed_image = indexed_image.convertToFormat(QImage::Format_RGB30);
 
+
+          QPixmap pixmap = QPixmap::fromImage(indexed_image);
+          QPainter painter(&pixmap);
+          QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+          painter.setRenderHint(QPainter::Antialiasing, true);
+          painter.setPen(pen);
+          painter.drawRects(m_rectangles_to_draw);
+
+          QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
           // Finally display it.
-          setPixmap(QPixmap::fromImage(indexed_image).scaled(size(), Qt::KeepAspectRatio));
+          // setPixmap(QPixmap::fromImage(indexed_image).scaled(size(), Qt::KeepAspectRatio));
         }
         break;
     }

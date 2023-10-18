@@ -3,9 +3,9 @@ require "formula"
 class Vin < Formula
   desc "Executable for managing filtergraphs for vision"
   homepage "https://github.com/petrogly-ph/vin"
-  url "https://github.com/petrogly-ph/vin/archive/refs/tags/brew.tar.gz"
+  url "https://github.com/petrogly-ph/vin/archive/refs/tags/v0.5saccade.tar.gz"
   # url "file:///Users/drobotnik/projects/vin/"
-  sha256 "6a9cc1f1f977a8e241aa732e29817c97af2398859a6ac4aeb64ee7d992131000"
+  sha256 "0a95d556cc1768e90a96ee87cc5b1a8a2423d353a30a8c5b10efa6c7f72325bf"
   license "MIT"
   version "1.0"
 
@@ -18,7 +18,7 @@ class Vin < Formula
 
   depends_on "cmake" => :build
   depends_on "qt@6" => :build
-  depends_on "FunctionalDag" => :build
+  depends_on "functional-dag" => :build
 
   def install
     # ENV.cxx20 if build.cxx20?
