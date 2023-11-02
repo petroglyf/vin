@@ -11,6 +11,7 @@ using namespace fn_dag;
 namespace vin {
 
 vin_dag::vin_dag() : m_dag_tree(nullptr), m_all_loaded_specs() {
+  m_fn_manager = new fn_dag::dag_manager<std::string>();
   m_fn_manager->run_single_threaded(true);
 }
 
@@ -24,8 +25,12 @@ void vin_dag::initializeView(QTreeWidget *_view) {
   // QTreeWidgetItem *a_child = new QTreeWidgetItem();
   // a_child->setText(0,"another_child");
   // rootItem->addChild(a_child);
-
-  m_fn_manager = nullptr;
+  if(m_fn_manager != nullptr) 
+  {
+    m_fn_manager->stahp();
+    delete m_fn_manager;
+    m_fn_manager = nullptr;
+  }
 
   m_dag_tree->addTopLevelItems(items);
 }
@@ -154,6 +159,7 @@ void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<
     buffer << ifstream.rdbuf();
     const std::string all_contents = buffer.str();
     m_fn_manager = fsys_deserialize(all_contents, library);
+    m_fn_manager->run_single_threaded(true);
   }
   ifstream.close();
  

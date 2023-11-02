@@ -14,7 +14,7 @@
  * @license: MIT License
  */ 
 
-#include "vin/viz/ui_putitup.h"
+#include "ui_main_dialog.h"
 #include <QListWidget>
 
 #include "vin/utils/vin_library.hpp"
@@ -26,7 +26,7 @@ void populate_lib_list();
 
 class main_window : public QMainWindow {
 public:
-  Ui::PutItUp main_ui_window;
+  Ui::main_win main_ui_window;
   QListWidget *list;
 
   main_window();

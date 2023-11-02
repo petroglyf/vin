@@ -52,4 +52,3 @@ private:
     // torch::Tensor output_tensor;
     std::queue<DLTensor *> m_frame_queue;
 };
-
