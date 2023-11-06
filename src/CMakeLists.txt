@@ -3,11 +3,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FUNCTIONALDAG_CXX_FLAGS} ${VIZ_CXX_FLA
 ##########################################
 ###### Actual VIN specification  #########
 ##########################################
-set(SOURCES main.cpp
-              vin_dag_manager.cpp
-              vin_gui.cpp
-              utils/lib_specification.cpp
-              utils/vin_library.cpp)
+set(SOURCES vin/main.cpp
+            vin/vin_dag_manager.cpp
+            vin/vin_gui.cpp
+            vin/utils/lib_specification.cpp
+            vin/utils/vin_library.cpp)
 
 qt_wrap_ui(SOURCES viz/main_dialog.ui)
 qt_add_executable(vin1 ${SOURCES})

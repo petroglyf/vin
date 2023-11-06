@@ -7,7 +7,7 @@ class Vin < Formula
   # url "file:///Users/drobotnik/projects/vin/"
   sha256 "0a95d556cc1768e90a96ee87cc5b1a8a2423d353a30a8c5b10efa6c7f72325bf"
   license "MIT"
-  version "1.0"
+  version "0.7"
 
   # bottle do
   #   cellar :any
@@ -18,7 +18,7 @@ class Vin < Formula
 
   depends_on "cmake" => :build
   depends_on "qt@6" => :build
-  depends_on "functional-dag" => :build
+  depends_on "functional-dag@0.5" => :build
 
   def install
     # ENV.cxx20 if build.cxx20?

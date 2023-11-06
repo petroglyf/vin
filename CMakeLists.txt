@@ -53,8 +53,8 @@ find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 qt_standard_project_setup()
 
 add_subdirectory(src)
-add_subdirectory(src/vin/saccade_policy)
-add_subdirectory(src/vin/source_tools)
+add_subdirectory(src/saccade_policy)
+add_subdirectory(src/qtio)
 
 
 ########################################
