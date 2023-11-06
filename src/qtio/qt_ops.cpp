@@ -8,71 +8,82 @@
 #include <QCoreApplication>
 #include <QVideoFrame>
 
-#include "vin/viz/qt_op.hpp"
+#include "functional_dag/lib_utils.h"
 
-qt_op::qt_op(OP op, int32_t width, int32_t height) :
+typedef enum {
+  RESIZE
+} OP;
+
+class qt_op : public fn_dag::module_transmit {
+private:
+  OP op_code;
+  uint32_t m_width;
+  uint32_t m_height;
+  
+public:
+  qt_op(OP op, int32_t width, int32_t height) :
                             op_code(op),
                             m_width(width),
                             m_height(height)
-{
-}
-
-qt_op::~qt_op() 
-{
-}
-
-std::vector<std::string> const qt_op::get_available_slots() {
-  std::vector<std::string> slots;
-  slots.push_back("default");
-  return slots;
-}
-
-DLTensor *qt_op::update(const DLTensor *input_dltensor_) {
-  QImage input_image((uchar *)input_dltensor_->data, 
-                     input_dltensor_->shape[2], 
-                     input_dltensor_->shape[1], 
-                     QImage::Format_RGB888);
-  QImage output_image;
-  bool skip = false;
-  switch(op_code) {
-    case RESIZE:
-      std::cout << "Resizing\n";
-      if(m_width > 0 && m_height > 0) {
-        std::cout << "scaling\n";
-        output_image = input_image.scaled(m_width, 
-                                          m_height,
-                                          Qt::IgnoreAspectRatio,
-                                          Qt::SmoothTransformation);
-      }
-      break;
-    default:
-    std::cout << "skipping\n";
-      skip = true;
+  {
   }
 
-  if(skip)
-    return const_cast<DLTensor *>(input_dltensor_);
-  else {
-    std::cout << "Packing\n";
-    uint8_t *bits = output_image.bits();
-    DLTensor *output_tensor = new DLTensor;
-    output_tensor->device.device_type = DLDeviceType::kDLCPU;
-    output_tensor->ndim = 3;
-    output_tensor->shape = new int64_t[]{3,m_height,m_width};
-    output_tensor->strides = NULL;
-    output_tensor->byte_offset = 0;
-    output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
-    output_tensor->dtype.bits = 8;
-    output_tensor->dtype.lanes = 3;
-    output_tensor->data = new uint8_t[m_width*m_height*3];
-    memcpy(output_tensor->data, bits, m_width*m_height*3*sizeof(uint8_t));
-    return output_tensor;
+  ~qt_op() 
+  {
   }
-  
-  std::cout<< " BAD!!\n";
-  return nullptr;
-}
 
+  std::vector<std::string> const get_available_slots() {
+    std::vector<std::string> slots;
+    slots.push_back("default");
+    return slots;
+  }
+
+  DLTensor *update(const DLTensor *input_dltensor_) {
+    QImage input_image((uchar *)input_dltensor_->data, 
+                        input_dltensor_->shape[2], 
+                        input_dltensor_->shape[1], 
+                        QImage::Format_RGB888);
+    QImage output_image;
+    bool skip = false;
+    switch(op_code) {
+      case RESIZE:
+        std::cout << "Resizing\n";
+        if(m_width > 0 && m_height > 0) {
+          std::cout << "scaling\n";
+          output_image = input_image.scaled(m_width, 
+                                            m_height,
+                                            Qt::IgnoreAspectRatio,
+                                            Qt::SmoothTransformation);
+        }
+        break;
+      default:
+      std::cout << "skipping\n";
+        skip = true;
+    }
+
+    if(skip)
+      return const_cast<DLTensor *>(input_dltensor_);
+    else {
+      std::cout << "Packing\n";
+      uint8_t *bits = output_image.bits();
+      DLTensor *output_tensor = new DLTensor;
+      output_tensor->device.device_type = DLDeviceType::kDLCPU;
+      output_tensor->ndim = 3;
+      output_tensor->shape = new int64_t[]{3,m_height,m_width};
+      output_tensor->strides = NULL;
+      output_tensor->byte_offset = 0;
+      output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
+      output_tensor->dtype.bits = 8;
+      output_tensor->dtype.lanes = 3;
+      output_tensor->data = new uint8_t[m_width*m_height*3];
+      memcpy(output_tensor->data, bits, m_width*m_height*3*sizeof(uint8_t));
+      return output_tensor;
+    }
+
+    std::cout<< " BAD!!\n";
+    return nullptr;
+  }
+};
 
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
 

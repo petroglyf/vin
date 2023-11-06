@@ -8,7 +8,7 @@
 #include <QCoreApplication>
 #include <QVideoFrame>
 
-#include "vin/viz/qt_io.hpp"
+#include "qtio/qt_io.hpp"
 
 player_event_thread::player_event_thread(std::string uri, int32_t width, int32_t height) :
 m_player(nullptr),

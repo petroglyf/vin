@@ -1,4 +1,4 @@
-#include "vin/viz/ImageView.hpp"
+#include "qtio/image_view.hpp"
 #include "functional_dag/lib_utils.h"
 #include <QHBoxLayout>
 #include <QCoreApplication>

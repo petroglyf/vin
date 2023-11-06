@@ -13,7 +13,7 @@
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
  */ 
-#include "vin/viz/ImageView.hpp"
+#include "qtio/image_view.hpp"
 #include <QPainter>
 #include <iostream>
 

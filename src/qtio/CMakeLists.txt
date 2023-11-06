@@ -3,7 +3,7 @@
 ##############################
 if (BUILD_QTIO)
   ###### QTIO Input video suppport  #########
-  file(GLOB QTIO_HEADERS_TO_MOC ../../include/vin/viz/qt_io.hpp)
+  file(GLOB QTIO_HEADERS_TO_MOC ../../include/qtio/qt_io.hpp)
   qt6_wrap_cpp(QTIO_PROCESSED_MOCS                                                                                                                                                                                                                                                                    
                   ${QTIO_HEADERS_TO_MOC}                                                   
                   TARGET qtio
@@ -15,7 +15,7 @@ if (BUILD_QTIO)
   target_link_libraries(qtio PRIVATE Qt6::Core Qt6::Multimedia Qt6::MultimediaWidgets FunctionalDag::functional_dag)
 
   ###### QTIO Output image suppport  #########
-  file(GLOB HEADERS_TO_MOC ../../include/vin/viz/ImageView.hpp)
+  file(GLOB HEADERS_TO_MOC ../../include/qtio/image_view.hpp)
   qt6_wrap_cpp(PROCESSED_MOCS                                                                                                                                                                                                                                                                    
                   ${HEADERS_TO_MOC}                                                   
                   TARGET imageview
