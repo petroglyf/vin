@@ -22,15 +22,12 @@ private:
   
 public:
   qt_op(OP op, int32_t width, int32_t height) :
-                            op_code(op),
-                            m_width(width),
-                            m_height(height)
-  {
-  }
+        op_code(op),
+        m_width(width),
+        m_height(height)
+  {}
 
-  ~qt_op() 
-  {
-  }
+  ~qt_op() {}
 
   std::vector<std::string> const get_available_slots() {
     std::vector<std::string> slots;
@@ -47,9 +44,7 @@ public:
     bool skip = false;
     switch(op_code) {
       case RESIZE:
-        std::cout << "Resizing\n";
         if(m_width > 0 && m_height > 0) {
-          std::cout << "scaling\n";
           output_image = input_image.scaled(m_width, 
                                             m_height,
                                             Qt::IgnoreAspectRatio,
@@ -57,14 +52,12 @@ public:
         }
         break;
       default:
-      std::cout << "skipping\n";
         skip = true;
     }
 
     if(skip)
       return const_cast<DLTensor *>(input_dltensor_);
     else {
-      std::cout << "Packing\n";
       uint8_t *bits = output_image.bits();
       DLTensor *output_tensor = new DLTensor;
       output_tensor->device.device_type = DLDeviceType::kDLCPU;
@@ -80,7 +73,6 @@ public:
       return output_tensor;
     }
 
-    std::cout<< " BAD!!\n";
     return nullptr;
   }
 };
@@ -124,12 +116,9 @@ extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *optio
     switch(option.serial_id) {
       case 9011:
         width = option.value.int_value;
-        std::cout<< "got width: " << width << std::endl;
         break;
       case 9012:
-      
         height = option.value.int_value;
-        std::cout<< "got height: " << height << std::endl;
         break;
     }
   }
@@ -137,4 +126,3 @@ extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *optio
   fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new qt_op(OP::RESIZE, width, height));
   return (fn_dag::module *)vlc_out;
 }
-

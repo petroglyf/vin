@@ -46,4 +46,3 @@ private:
   void save();
   void load();
 };
-

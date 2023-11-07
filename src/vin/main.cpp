@@ -79,17 +79,6 @@ int main(int argc, char *argv[])
     QString targetFile = parser.value(loadDagOption);
     vin::vin_dag manager; 
 
-    // QMetaObject::invokeMethod(qApp, [&]() {
-    //   std::cout << "Waiting to load file\n";
-    //   this_thread::sleep_for(1000ms);
-    //   std::cout << "Loading stuff\n";
-    //   manager.load_from_file(targetFile.toStdString(), library.get_library());
-    //   std::cout << "Continue\n";
-    //   do {
-    //     this_thread::sleep_for(300ms);
-    //   } while(!SHOULD_QUIT);
-    // });
-
     std::thread run_thread([&]() {
       this_thread::sleep_for(1000ms); 
       manager.load_from_file(targetFile.toStdString(), library.get_library());
@@ -104,14 +93,9 @@ int main(int argc, char *argv[])
     manager.shutdown();
   } else {
     main_window main_window;
-    // std::thread list_thread(populate_lib_list, main_window.list, &library);
     main_window.show();
 
-    int ret_code = app.exec();
-
-    // list_thread.join();
-    
-    return ret_code;
+    return app.exec();
   }
   return 0;
 }

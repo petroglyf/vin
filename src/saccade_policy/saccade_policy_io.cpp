@@ -20,7 +20,7 @@ static uint64_t timeSinceEpochMillisec() {
 
 template <typename T> 
 int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+  return (T(0) < val) - (val < T(0));
 }
 
 class saccade_op : public fn_dag::module_transmit {
@@ -75,7 +75,6 @@ public:
     }
 
     switch(m_op_code) {
-      
       case RANDOM:
         if(timeSinceEpochMillisec() - m_last_update_ms > 3000) {
           for(uint32_t i = 0;i < m_npts;i++) {
@@ -85,16 +84,6 @@ public:
           m_last_update_ms = timeSinceEpochMillisec();
         }
       case CONSTANT:
-        // // move all of the points toward the goal points
-        // for(uint32_t i = 0;i < m_npts;i++) {
-        //   std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
-        //     // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
-        //     int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
-        //     return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
-        //   };
-        //   prev_points[i*2] += get_delt(prev_points[i*2], prev_gpoints[i*2]);
-        //   prev_points[i*2+1] += get_delt(prev_points[i*2+1], prev_gpoints[i*2+1]);
-        // }
         break;
       case SALIENCY:
         for(uint32_t i = 0;i < m_npts;i++) {
@@ -104,17 +93,16 @@ public:
           
           prev_gpoints[i*2] = next_state >> 32;
           prev_gpoints[i*2+1] = (next_state << 32) >> 32;
-          std::cout << "next state: " << (int)prev_points[i*2] << ", " << (int)prev_points[i*2+1] << std::endl;
         }
         break;
       default:
         std::cout << "skipping, defaulting to constant\n";
         return nullptr;
     }
+
     // move all of the points toward the goal points
     for(uint32_t i = 0;i < m_npts;i++) {
       std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
-        // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
         int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
         return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
       };
@@ -135,10 +123,6 @@ private:
   bool m_is_initialized;
   uint64_t m_last_update_ms;
 };
-
-
-
-
 
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
 

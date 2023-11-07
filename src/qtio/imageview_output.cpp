@@ -5,20 +5,17 @@
 
 using namespace vin;
 class QtViewer : public fn_dag::module_transmit {
-  public:
+public:
   QtViewer(): frame(nullptr), imagePanel(nullptr) {
-    // QApplication *app = (QApplication *)QCoreApplication::instance();
-    // QMetaObject::invokeMethod(app, "start", Qt::QueuedConnection, Q_ARG());
+    // qApp is reserved and is inherited from QLabel
     QMetaObject::invokeMethod(qApp, [this](){
-      this->start();
+      this->start(); // Start the widget thread so the callbacks work.
     });
-    // start();
-    }
+  }
+
   void start() {
     frame = new QFrame();
     QHBoxLayout *lay = new QHBoxLayout(frame);
-    
-    
     
     imagePanel = new ImageView();
     lay->addWidget(imagePanel);
@@ -27,54 +24,52 @@ class QtViewer : public fn_dag::module_transmit {
     frame->show();
   }
 
-  DLTensor *update(const DLTensor *image);
-  private:
+  DLTensor *update(const DLTensor *image) {
+    if(image != nullptr && image->ndim == 3) {
+      switch(image->shape[0]) {
+      case 1:
+        imagePanel->setTensor(*image, VizMode::VIZ_HEATMAP);
+        break;
+      case 3:
+        imagePanel->setTensor(*image, VizMode::VIZ_RGB);
+        break;
+      default:
+        std::cerr << "Unable to visualize image with n_channels: " << image->shape[0] << std::endl;
+      }
+      // imagePanel->drawBox(100, 100, 50, 50);
+    } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
+      if(image->shape[1] == 2) {
+        std::cout << "Saccade points\n";
+        std::vector< std::tuple<uint32_t, uint32_t> > goal_points;
+        for(auto i=0;i < image->shape[0];i++) {
+          uint32_t x = reinterpret_cast<uint32_t*>(image->data)[i*2];
+          uint32_t y = reinterpret_cast<uint32_t*>(image->data)[i*2+1];
+          goal_points.push_back(std::make_tuple(x, y));
+        }
+        imagePanel->setGazePts(goal_points);
+      } else{
+        // Each row is a bounding box
+        int64_t stride = image->strides[0];
+        int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
+        
+        imagePanel->clearBoxOverlay();
+        for(int64_t row = 0;row < image->shape[0];row++) {
+          int x = data_ptr[row*stride];
+          int y = data_ptr[row*stride+1];
+          int width = data_ptr[row*stride+2];
+          int height = data_ptr[row*stride+3];
+          imagePanel->drawBox(x, y, width, height);
+        }
+      }
+    }else
+      std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
+    return nullptr;
+  }
+  
+private:
   QFrame *frame;
   ImageView *imagePanel;
 };
-
-DLTensor *QtViewer::update(const DLTensor *image) {
-  if(image != nullptr && image->ndim == 3) {
-    switch(image->shape[0]) {
-    case 1:
-      imagePanel->setTensor(*image, VizMode::VIZ_HEATMAP);
-      break;
-    case 3:
-      imagePanel->setTensor(*image, VizMode::VIZ_RGB);
-      break;
-    default:
-      std::cerr << "Unable to visualize image with n_channels: " << image->shape[0] << std::endl;
-    }
-    // imagePanel->drawBox(100, 100, 50, 50);
-  } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
-    if(image->shape[1] == 2) {
-      std::cout << "Saccade points\n";
-      std::vector< std::tuple<uint32_t, uint32_t> > goal_points;
-      for(auto i=0;i < image->shape[0];i++) {
-        uint32_t x = reinterpret_cast<uint32_t*>(image->data)[i*2];
-        uint32_t y = reinterpret_cast<uint32_t*>(image->data)[i*2+1];
-        goal_points.push_back(std::make_tuple(x, y));
-      }
-      imagePanel->setGazePts(goal_points);
-    } else{
-      // Each row is a bounding box
-      int64_t stride = image->strides[0];
-      int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
-      
-      imagePanel->clearBoxOverlay();
-      for(int64_t row = 0;row < image->shape[0];row++) {
-        int x = data_ptr[row*stride];
-        int y = data_ptr[row*stride+1];
-        int width = data_ptr[row*stride+2];
-        int height = data_ptr[row*stride+3];
-        imagePanel->drawBox(x, y, width, height);
-      }
-    }
-    
-  }else
-    std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
-  return nullptr;
-}
 
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
 

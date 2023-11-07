@@ -44,8 +44,7 @@ shared_ptr<module> lib_specification::instantiate(const lib_options &options) {
 }
 
 lib_specification::~lib_specification() {
-  if(lib_handle != nullptr) {
+  if(lib_handle != nullptr)
     dlclose(lib_handle);
-  }
   lib_handle = nullptr;
 }

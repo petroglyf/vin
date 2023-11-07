@@ -22,7 +22,6 @@ namespace vin {
   class vin_dag {
   public:
     vin_dag();
-    
     ~vin_dag();
 
     int vin_add_node(const std::string &name, 

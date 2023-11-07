@@ -6,7 +6,6 @@
 #include <QSpinBox>
 #include <QCheckBox>
 
-
 #define XSTR(x) STR(x)
 #define STR(x) #x
 
@@ -138,26 +137,10 @@ main_window::main_window() : m_curr_spec_handle(nullptr), m_curr_lib_spec(nullpt
     main_ui_window.actionOpen, &QAction::triggered,
     this, &main_window::load);
 
-  // main_ui_window.current_dag->setColumnCount(1);
-  // main_ui_window.current_dag->setHeaderLabel("Running functions");
   m_dag.initializeView(main_ui_window.current_dag);
-  // main_ui_window.current_dag->setModel(&m_dag;
-  
-  // QList<QTreeWidgetItem *> items;
-  // QTreeWidgetItem *rootItem = new QTreeWidgetItem(static_cast<QTreeWidget *>(nullptr), QStringList(QString("World")));
-  // items.append(rootItem);
- 
-  // QTreeWidgetItem *a_child = new QTreeWidgetItem();
-  // a_child->setText(0,"another_child");
-  // rootItem->addChild(a_child);
-
-  // dag_tree->addTopLevelItems(items);
 }
 
-main_window::~main_window()
-{
-
-}
+main_window::~main_window() {}
 
 void main_window::refresh_options_panel( QListWidgetItem *value ) {  
   main_ui_window.statusbar->showMessage(value->statusTip(), 3000); 
@@ -185,15 +168,10 @@ void main_window::handle_create() {
     }
 
     shared_ptr<module> new_module = m_curr_lib_spec->instantiate(*m_curr_spec_handle);
-    std::cout<< " new module\n" << new_module << std::endl;;
     if(new_module->get_type() == MODULE_TYPE::SOURCE) {
-      std::cout << "it's a source\n" << typeid(new_module.get()).name();
       module_source *src = new_module->get_handle_as_source();
-      
       m_dag.vin_add_src(m_node_name, m_curr_lib_spec->serial_id_guid, m_curr_spec_handle, src);
-
     } else {
-      std::cout << "it's a filter\n";
       module_transmit *filter = new_module->get_slot_handle_as_mapping("no");
       m_dag.vin_add_node(m_node_name, m_curr_lib_spec->serial_id_guid, filter, m_curr_spec_handle, m_parent_node_name);
     }
@@ -202,6 +180,7 @@ void main_window::handle_create() {
 
 void main_window::save() {
   std::cout << "Save\n";
+  //TODO: File dialog
   m_dag.serialize("/Users/drobotnik/projects/oculator/build/test.json");
 }
 
