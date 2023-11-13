@@ -9,11 +9,11 @@
 
 uint64_t gradient_next_state(uint64_t prev_state, const DLTensor *heatmap);
 
-enum POLICY_TYPE {
+enum policy_type {
   CONSTANT, RANDOM, SALIENCY
 };
 
-static uint64_t timeSinceEpochMillisec() {
+static uint64_t epoch_time_ms() {
   using namespace std::chrono;
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
@@ -25,7 +25,7 @@ int sgn(T val) {
 
 class saccade_op : public fn_dag::module_transmit {
 public:
-  saccade_op(POLICY_TYPE _op_code, const uint8_t _n_points) 
+  saccade_op(policy_type _op_code, const uint8_t _n_points) 
                             : m_op_code(_op_code),
                               m_npts(_n_points),
                               m_is_initialized(false)
@@ -70,18 +70,18 @@ public:
         prev_points[i*2] = random() % max_x;
         prev_points[i*2+1] = random() % max_y;
       }
-      m_last_update_ms = timeSinceEpochMillisec();
+      m_last_update_ms = epoch_time_ms();
       m_is_initialized = true;
     }
 
     switch(m_op_code) {
       case RANDOM:
-        if(timeSinceEpochMillisec() - m_last_update_ms > 3000) {
+        if(epoch_time_ms() - m_last_update_ms > 3000) {
           for(uint32_t i = 0;i < m_npts;i++) {
             prev_gpoints[i*2] = random() % max_x;
             prev_gpoints[i*2+1] = random() % max_y;
           }
-          m_last_update_ms = timeSinceEpochMillisec();
+          m_last_update_ms = epoch_time_ms();
         }
       case CONSTANT:
         break;
@@ -116,7 +116,7 @@ public:
   }
 
 private:
-  POLICY_TYPE m_op_code;
+  policy_type m_op_code;
   uint32_t m_npts;
   uint32_t *prev_gpoints;
   uint32_t *prev_points;
@@ -157,6 +157,6 @@ extern "C" DL_EXPORT fn_dag::lib_options get_options() {
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {
   (void)options;
-  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(POLICY_TYPE::SALIENCY, 3));
+  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(policy_type::SALIENCY, 3));
   return (fn_dag::module *)vlc_out;
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(vin LANGUAGES CXX )
+project(vin LANGUAGES CXX VERSION 0.7)
 
 #############################################
 ####### Setting up compiler options #########
@@ -11,12 +11,12 @@ set (CMAKE_PREFIX_PATH "/opt/homebrew/include")
 
 cmake_path(APPEND_STRING CMAKE_INSTALL_PREFIX "/lib/vin_libs/" OUTPUT_VARIABLE VIN_LIB_DIR)
 # get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
-get_filename_component(VIN_LIB_DIR "/opt/homebrew/Cellar/vin/1.0/lib/vin_libs" ABSOLUTE  )
+get_filename_component(VIN_LIB_DIR "/opt/homebrew/Cellar/vin/${CMAKE_PROJECT_VERSION}/lib/vin_libs" ABSOLUTE  )
 
 message("${VIN_LIB_DIR}")
 
 include_directories("include/" ${CMAKE_CURRENT_BINARY_DIR}/src)
-add_compile_options("-stdlib=libc++" "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+add_compile_options("-stdlib=libc++" "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-DVIN_VERSION=${CMAKE_PROJECT_VERSION}")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option (DEBUG "Build debug version" ON)

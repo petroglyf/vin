@@ -22,3 +22,13 @@ install(TARGETS vin1
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin)
+
+########################################
+####### Lint command (optional) ########
+########################################
+add_custom_target(lint
+  COMMAND clang-tidy src/vin/main.cpp src/vin/vin_dag_manager.cpp src/vin/vin_gui.cpp src/vin/utils/lib_specification.cpp src/vin/utils/vin_library.cpp -- -Iinclude/ -I${CMAKE_OSX_SYSROOT}/usr/include
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  COMMENT "Linting the source"
+  VERBATIM
+)

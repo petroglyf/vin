@@ -36,7 +36,7 @@ namespace vin {
 
     void serialize(fs::path file_name);
     int load_from_file(fs::path, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &);
-    void initializeView(QTreeWidget *_view);
+    void initialize_view(QTreeWidget *_view);
     void shutdown();
   
   private: 

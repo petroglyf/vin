@@ -14,7 +14,7 @@ namespace vin {
     m_fn_manager->run_single_threaded(true);
   }
 
-  void vin_dag::initializeView(QTreeWidget *_view) {
+  void vin_dag::initialize_view(QTreeWidget *_view) {
     m_dag_tree = _view;
 
     QList<QTreeWidgetItem *> items;
@@ -47,6 +47,7 @@ namespace vin {
       delete m_fn_manager;
       m_fn_manager = nullptr;
     }
+
     for(auto spec : m_all_loaded_specs) {
       std::cout << "Loaded spec: " << spec.name << std::endl;
       for(auto option : spec.instantiation_options) {
@@ -139,12 +140,11 @@ namespace vin {
 
   void vin_dag::serialize(const fs::path file_name) 
   {
-    (void)file_name;
-    // std::string raw_json = fsys_serialize(&m_all_loaded_specs);
-    // std::ofstream ofstream(file_name.c_str());
-    // if(ofstream.is_open())
-    //   ofstream.write(raw_json.c_str(), raw_json.length());
-    // ofstream.close();
+    std::string raw_json = fsys_serialize(&m_all_loaded_specs);
+    std::ofstream ofstream(file_name.c_str());
+    if(ofstream.is_open())
+      ofstream.write(raw_json.c_str(), raw_json.length());
+    ofstream.close();
   }
 
   void vin_dag::shutdown() {

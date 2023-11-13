@@ -34,7 +34,7 @@ void errorOccurred(QMediaPlayer::Error error, const QString &errorString)
   }
 }
 
-void qt_video_player::videoFrameChanged(const QVideoFrame &frame)
+void qt_video_player::frame_changed(const QVideoFrame &frame)
 {
   const QImage &imageSmall = frame.toImage();
 
@@ -101,7 +101,7 @@ void qt_video_player::run()
   QObject::connect(sink, &QVideoSink::videoFrameChanged,
                    [this](const QVideoFrame &frame)
                    {
-                     this->videoFrameChanged(frame);
+                     this->frame_changed(frame);
                    });
   m_player->play();
   exec();

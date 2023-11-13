@@ -71,7 +71,7 @@ public:
    * 
    * @param frame The new frame from the player object
   */
-  void videoFrameChanged(const QVideoFrame &frame);
+  void frame_changed(const QVideoFrame &frame);
 
 private:
     QMediaPlayer *m_player;               // Player object for Qt 

@@ -17,7 +17,7 @@ public:
     frame = new QFrame();
     QHBoxLayout *lay = new QHBoxLayout(frame);
     
-    imagePanel = new ImageView();
+    imagePanel = new image_view();
     lay->addWidget(imagePanel);
 
     frame->setMinimumSize(800, 600);
@@ -28,15 +28,14 @@ public:
     if(image != nullptr && image->ndim == 3) {
       switch(image->shape[0]) {
       case 1:
-        imagePanel->setTensor(*image, VizMode::VIZ_HEATMAP);
+        imagePanel->set_tensor(*image, visualization_mode::VIZ_HEATMAP);
         break;
       case 3:
-        imagePanel->setTensor(*image, VizMode::VIZ_RGB);
+        imagePanel->set_tensor(*image, visualization_mode::VIZ_RGB);
         break;
       default:
         std::cerr << "Unable to visualize image with n_channels: " << image->shape[0] << std::endl;
       }
-      // imagePanel->drawBox(100, 100, 50, 50);
     } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
       if(image->shape[1] == 2) {
         std::vector< std::tuple<uint32_t, uint32_t> > goal_points;
@@ -45,19 +44,19 @@ public:
           uint32_t y = reinterpret_cast<uint32_t*>(image->data)[i*2+1];
           goal_points.push_back(std::make_tuple(x, y));
         }
-        imagePanel->setGazePts(goal_points);
+        imagePanel->set_gaze_pts(goal_points);
       } else{
         // Each row is a bounding box
         int64_t stride = image->strides[0];
         int32_t *data_ptr = reinterpret_cast<int32_t*>(image->data);
         
-        imagePanel->clearBoxOverlay();
+        imagePanel->clear_overlay();
         for(int64_t row = 0;row < image->shape[0];row++) {
           int x = data_ptr[row*stride];
           int y = data_ptr[row*stride+1];
           int width = data_ptr[row*stride+2];
           int height = data_ptr[row*stride+3];
-          imagePanel->drawBox(x, y, width, height);
+          imagePanel->draw_box(x, y, width, height);
         }
       }
     }else
@@ -67,7 +66,7 @@ public:
   
 private:
   QFrame *frame;
-  ImageView *imagePanel;
+  image_view *imagePanel;
 };
 
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"

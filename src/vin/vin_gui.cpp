@@ -13,7 +13,7 @@ using namespace fn_dag;
 
 void populate_lib_list() { // QListWidget *list, vin::vin_library *library
   std::this_thread::sleep_for(100ms); // Wait for the window to come up
-  
+  //TODO: Bring this back
 // #ifdef VIN_LIB_DIR
 //   auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
 // #else
@@ -139,7 +139,7 @@ main_window::main_window() : m_curr_spec_handle(nullptr), m_curr_lib_spec(nullpt
     main_ui_window.actionOpen, &QAction::triggered,
     this, &main_window::load);
 
-  m_dag.initializeView(main_ui_window.current_dag);
+  m_dag.initialize_view(main_ui_window.current_dag);
 }
 
 main_window::~main_window() {}
@@ -183,7 +183,7 @@ void main_window::handle_create() {
 void main_window::save() {
   std::cout << "Save\n";
   //TODO: File dialog
-  m_dag.serialize("/Users/drobotnik/projects/oculator/build/test.json");
+  m_dag.serialize("test.json");
 }
 
 void main_window::load() {

@@ -8,7 +8,7 @@
  *     \_/   \_______/|/    )_)
  *                             
  * 
- * ImageView displays RGB and heat maps for the data being streamed.
+ * image_view displays RGB and heat maps for the data being streamed.
  * 
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
@@ -277,14 +277,14 @@ namespace vin {
     {1.0, 1.0, 0.9845588080882198, 1.0},
     {1.0, 1.0, 1.0, 1.0}};
 
-  Q_DECL_EXPORT ImageView::ImageView(QWidget *parent) : QLabel(parent) {
+  Q_DECL_EXPORT image_view::image_view(QWidget *parent) : QLabel(parent) {
     setAlignment(Qt::AlignCenter);
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   }
 
-  ImageView::~ImageView() {}
+  image_view::~image_view() {}
 
-  void ImageView::setGazePts(std::vector< std::tuple<uint32_t, uint32_t> > new_pts) {
+  void image_view::set_gaze_pts(std::vector< std::tuple<uint32_t, uint32_t> > new_pts) {
     std::scoped_lock fn_lock(m_gaze_pts_mutex);
     m_gaze_pts.swap(new_pts);
   }
@@ -300,16 +300,16 @@ namespace vin {
     return colorTable;
   }
 
-  void ImageView::setTensor(const DLTensor &tensor, const VizMode mode) {
+  void image_view::set_tensor(const DLTensor &tensor, const visualization_mode mode) {
     int width, height;
     uint8_t* img_data;
 
-    clearBoxOverlay();
+    clear_overlay();
     {
       std::scoped_lock draw_lock(m_gaze_pts_mutex);
       for(auto coord_tuple : m_gaze_pts) {
         auto [x, y] = coord_tuple;
-        drawBox(x, y, 25, 25);
+        draw_box(x, y, 25, 25);
       }
     }
     
@@ -329,7 +329,6 @@ namespace vin {
           painter.drawRects(m_rectangles_to_draw);
 
           QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
-          // QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, QPixmap::fromImage(image)));
         }
         break;
 
@@ -341,16 +340,10 @@ namespace vin {
           // Extract it to a Qt data structure
           QImage greyscale(img_data, width, height, sizeof(unsigned char)*width, QImage::Format_Grayscale8);
 
-          // Rotate it to fit
-          // QTransform myTransform;
-          // myTransform.rotate(90);
-          // greyscale = greyscale.transformed(myTransform).mirrored(true, false);
-
           // apply the heatmap
           QImage indexed_image = greyscale.convertToFormat(QImage::Format_Indexed8);
           indexed_image.setColorTable(getHotColorMap());
           indexed_image = indexed_image.convertToFormat(QImage::Format_RGB30);
-
 
           QPixmap pixmap = QPixmap::fromImage(indexed_image);
           QPainter painter(&pixmap);
@@ -360,19 +353,17 @@ namespace vin {
           painter.drawRects(m_rectangles_to_draw);
 
           QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
-          // Finally display it.
-          // setPixmap(QPixmap::fromImage(indexed_image).scaled(size(), Qt::KeepAspectRatio));
         }
       default:
         break;
     }
   }
 
-  void ImageView::drawBox(int x, int y, int width, int height) {
+  void image_view::draw_box(int x, int y, int width, int height) {
     m_rectangles_to_draw.push_back(QRect(x, y, width, height));
   }
 
-  void ImageView::clearBoxOverlay() {
+  void image_view::clear_overlay() {
     m_rectangles_to_draw.clear();
   }
 }

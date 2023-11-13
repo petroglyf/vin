@@ -9,7 +9,6 @@
 namespace vin {
   shared_ptr<fn_dag::module> __instantiate_fn_prototype(std::shared_ptr<lib_specification> lib_handle, 
                                             const fn_dag::lib_options * opts) {
-    std::cout<< " TRYING TO INSTANTIATE..\n";
     shared_ptr<fn_dag::module> module_ptr = lib_handle->instantiate(*opts);
     return module_ptr;
   }

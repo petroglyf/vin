@@ -19,7 +19,10 @@ class Vin < Formula
   depends_on "cmake" => :build
   depends_on "qt@6" => :build
   depends_on "functional-dag@0.5" => :build
+  depends_on "clang-tidy" => :build
 
+  depends_on "catch2" => :test
+  
   def install
     # ENV.cxx20 if build.cxx20?
     mkdir "vin-build" do

@@ -8,7 +8,7 @@
  *    \   /  ___) (___| )  \  |
  *     \_/   \_______/|/    )_)
  *                             
- * ImageView displays RGB and heat maps for the data being streamed.
+ * image_view displays RGB and heat maps for the data being streamed.
  * 
  * @author: ndepalma@alum.mit.edu
  */ 
@@ -26,14 +26,14 @@ namespace vin
   */
   typedef enum {
     VIZ_RGB, VIZ_HEATMAP
-  } VizMode;
+  } visualization_mode;
 
   /** A class to view DLTensor images
    * 
    * Imageview is a class used internally to interpret a DLTensor
    * and display an image in what looks like a QLabel to Qt. 
   */
-  class ImageView : public QLabel
+  class image_view : public QLabel
   {
     Q_OBJECT
     
@@ -49,13 +49,13 @@ namespace vin
      * 
      * @param parent Parent widget (container)
      */
-    ImageView(QWidget *parent = nullptr);
+    image_view(QWidget *parent = nullptr);
 
     /** Deconstructor
      * 
      * Deconstructor (used for cleanup)
      */
-    ~ImageView();
+    ~image_view();
 
     /** A function to set camera locations to look at
      * 
@@ -64,20 +64,20 @@ namespace vin
      * 
      * @param new_Pts a list of points in the image to render rectangles
     */
-    void setGazePts(std::vector< xy_pt > new_pts);
+    void set_gaze_pts(std::vector< xy_pt > new_pts);
 
     /** A function to set what image to display next
      * 
-     * setTensor sets the next image to display in the widget
+     * set_tensor sets the next image to display in the widget
      * 
      * @param tensor The image to display
      * @param mode How to display it
      */
-    void setTensor(const DLTensor &tensor, const VizMode mode);
+    void set_tensor(const DLTensor &tensor, const visualization_mode mode);
 
     /** A function to draw boxes where the cameras will center themselves.
      * 
-     * drawBox is a public method that will add a rectangle at a
+     * draw_box is a public method that will add a rectangle at a
      * specific location. It's helpful because it can be called asynchronously.
      * 
      * @param x top-x location of the box on the image
@@ -85,15 +85,15 @@ namespace vin
      * @param width width of the box on the image
      * @param height height of the box on the image
      */
-    void drawBox(int x, int y, int width, int height);
+    void draw_box(int x, int y, int width, int height);
 
     /** Clears the points to look at
      * 
-     * clearBoxOverlay will, asynchronously, clear out the 
+     * clear_overlay will, asynchronously, clear out the 
      * rectangles so that other methods can set new rectangles
      * later on.
      */
-    void clearBoxOverlay();
+    void clear_overlay();
   };
 }
 

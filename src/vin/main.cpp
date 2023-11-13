@@ -30,6 +30,9 @@
 #include "vin/vin_gui.hpp"
 #include "vin/utils/vin_library.hpp"
 
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
 std::atomic_bool SHOULD_QUIT;
 
 using namespace std::placeholders;
@@ -46,7 +49,7 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
 
   QCoreApplication::setApplicationName("VIN");
-  QCoreApplication::setApplicationVersion("0.8");
+  QCoreApplication::setApplicationVersion(XSTR(VIN_VERSION));
 
   QCommandLineParser parser;
   parser.setApplicationDescription("Video INput: a functional DAG for visualizing DLTensors");
@@ -91,9 +94,7 @@ int main(int argc, char *argv[])
     });
     
     auto status = run_thread.wait_for(6s);
-    if(status == std::future_status::ready) {
-      std::cout << "manager faild to load so exiting\n";
-    } else {
+    if(status != std::future_status::ready) {
       app.exec();
       run_thread.wait();
     }
