@@ -33,6 +33,7 @@ namespace vin {
 
   vin_dag::~vin_dag() 
   {
+    std::cout << " Deconstructing vin_dag\n";
     if(m_dag_tree != nullptr) 
     {
       delete m_dag_tree;
@@ -42,15 +43,27 @@ namespace vin {
     if(m_fn_manager != nullptr)
     {
       m_fn_manager->stahp();
+      std::cout << " Freeing manager memory\n";
       delete m_fn_manager;
       m_fn_manager = nullptr;
+    }
+    for(auto spec : m_all_loaded_specs) {
+      std::cout << "Loaded spec: " << spec.name << std::endl;
+      for(auto option : spec.instantiation_options) {
+        std::cout << "Checking out option " << option.serial_id << std::endl;
+        if(option.type == OPTION_TYPE::STRING) {
+          std::cout << "Freeing value: " << option.value.string_value << std::endl;
+          free((void *)option.value.string_value);
+        }
+
+      }
     }
   }
 
   int vin_dag::vin_add_node(const std::string &name, 
                             const uint32_t guid,
                             module_transmit *dag_node, 
-                            shared_ptr<lib_options> options,
+                            lib_options *options,
                             const std::string &parent_name)
   {
     std::function str_matches = [](const std::string val_find, const fn_dag::library_spec &val) {
@@ -96,7 +109,7 @@ namespace vin {
 
   int vin_dag::vin_add_src(const std::string &name, 
                           const uint32_t guid,
-                          shared_ptr<lib_options> options,  
+                          lib_options *options,  
                           module_source *dag_node)
   {
     std::function str_matches = [](const std::string val_find, const library_spec &val) {
@@ -126,18 +139,20 @@ namespace vin {
 
   void vin_dag::serialize(const fs::path file_name) 
   {
-    std::string raw_json = fsys_serialize(&m_all_loaded_specs);
-    std::ofstream ofstream(file_name.c_str());
-    if(ofstream.is_open())
-      ofstream.write(raw_json.c_str(), raw_json.length());
-    ofstream.close();
+    (void)file_name;
+    // std::string raw_json = fsys_serialize(&m_all_loaded_specs);
+    // std::ofstream ofstream(file_name.c_str());
+    // if(ofstream.is_open())
+    //   ofstream.write(raw_json.c_str(), raw_json.length());
+    // ofstream.close();
   }
 
   void vin_dag::shutdown() {
-    m_fn_manager->stahp();
+    if(m_fn_manager != nullptr) 
+      m_fn_manager->stahp();
   }
 
-  void vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &library) 
+  int vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &library) 
   {
     std::cout << "Opening file " << file_name << std::endl;
     std::ifstream ifstream(file_name);
@@ -145,12 +160,23 @@ namespace vin {
       std::stringstream buffer;
       buffer << ifstream.rdbuf();
       const std::string all_contents = buffer.str();
+      delete m_fn_manager;
+      for(auto entry : library) {
+        std::cout << entry.first << std::endl;
+      }
       m_fn_manager = fsys_deserialize(all_contents, library);
-      m_fn_manager->run_single_threaded(true);
+      if(m_fn_manager != nullptr)
+        m_fn_manager->run_single_threaded(true);
     }
     ifstream.close();
-  
-    m_fn_manager->print_all_dags();
-    std::cout << "Setup complete\n\n";
+
+    if(m_fn_manager == nullptr) {
+      std::cerr << "Unable to deserialize the compute dag..\n";
+      return 0;
+    } else {
+      m_fn_manager->print_all_dags();
+      std::cout << "Setup complete\n\n";
+    }
+    return 1;
   }
 }

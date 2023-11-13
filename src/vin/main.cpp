@@ -79,23 +79,31 @@ int main(int argc, char *argv[])
     QString targetFile = parser.value(loadDagOption);
     vin::vin_dag manager; 
 
-    std::thread run_thread([&]() {
+    auto run_thread = std::async([&]() {
       this_thread::sleep_for(1000ms); 
-      manager.load_from_file(targetFile.toStdString(), library.get_library());
-
-      do {
-        this_thread::sleep_for(300ms);
-      } while(!SHOULD_QUIT);
+      if(manager.load_from_file(targetFile.toStdString(), library.get_library())) {
+        do {
+          this_thread::sleep_for(300ms);
+        } while(!SHOULD_QUIT);
+        return 0;
+      }
+      return 1;
     });
     
-    app.exec();
-    run_thread.join();
+    auto status = run_thread.wait_for(6s);
+    if(status == std::future_status::ready) {
+      std::cout << "manager faild to load so exiting\n";
+    } else {
+      app.exec();
+      run_thread.wait();
+    }
+    
     manager.shutdown();
   } else {
     main_window main_window;
     main_window.show();
 
-    return app.exec();
+    app.exec();
   }
   return 0;
 }

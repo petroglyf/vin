@@ -151,9 +151,8 @@ extern "C" DL_EXPORT bool is_source() {
   return false;
 }
 
-extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
-  shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  return options;
+extern "C" DL_EXPORT fn_dag::lib_options get_options() {
+  return fn_dag::lib_options();
 }
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {

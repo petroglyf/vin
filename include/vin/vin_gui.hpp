@@ -34,7 +34,7 @@ public:
   
 
 private:  
-  shared_ptr<fn_dag::lib_options> m_curr_spec_handle;
+  const fn_dag::lib_options *m_curr_spec_handle;
   shared_ptr<lib_specification> m_curr_lib_spec;
   vin::vin_dag m_dag;
   std::string m_node_name;

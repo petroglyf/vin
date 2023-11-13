@@ -39,7 +39,6 @@ public:
       // imagePanel->drawBox(100, 100, 50, 50);
     } else if(image != nullptr && image->ndim == 2 && image->dtype.code == DLDataTypeCode::kDLUInt) {
       if(image->shape[1] == 2) {
-        std::cout << "Saccade points\n";
         std::vector< std::tuple<uint32_t, uint32_t> > goal_points;
         for(auto i=0;i < image->shape[0];i++) {
           uint32_t x = reinterpret_cast<uint32_t*>(image->data)[i*2];
@@ -95,10 +94,8 @@ extern "C" DL_EXPORT bool is_source() {
   return false;
 }
 
-extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
-  shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  
-  return options;
+extern "C" DL_EXPORT fn_dag::lib_options get_options() {  
+  return fn_dag::lib_options();
 }
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {
