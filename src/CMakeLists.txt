@@ -10,15 +10,14 @@ set(SOURCES vin/main.cpp
             vin/utils/vin_library.cpp)
 
 qt_wrap_ui(SOURCES viz/main_dialog.ui)
-qt_add_executable(vin1 ${SOURCES})
+qt_add_executable(vin ${SOURCES})
 
-target_link_libraries(vin1 PUBLIC Qt6::Core Qt6::Widgets FunctionalDag::functional_dag)
-
+target_link_libraries(vin PUBLIC Qt6::Core Qt6::Widgets FunctionalDag::functional_dag)
 
 ########################################
 ####### Install specification ##########
 ########################################
-install(TARGETS vin1 
+install(TARGETS vin 
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin)
@@ -27,7 +26,7 @@ install(TARGETS vin1
 ####### Lint command (optional) ########
 ########################################
 add_custom_target(lint
-  COMMAND clang-tidy src/vin/main.cpp src/vin/vin_dag_manager.cpp src/vin/vin_gui.cpp src/vin/utils/lib_specification.cpp src/vin/utils/vin_library.cpp -- -Iinclude/ -I${CMAKE_OSX_SYSROOT}/usr/include
+  COMMAND clang-tidy vin/main.cpp vin/vin_dag_manager.cpp vin/vin_gui.cpp vin/utils/lib_specification.cpp vin/utils/vin_library.cpp -- -Isrc/ -I${CMAKE_OSX_SYSROOT}/usr/include
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
   COMMENT "Linting the source"
   VERBATIM

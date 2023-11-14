@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     
     manager.shutdown();
   } else {
-    main_window main_window;
+    main_window main_window(&library);
     main_window.show();
 
     app.exec();

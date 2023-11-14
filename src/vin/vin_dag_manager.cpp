@@ -33,7 +33,6 @@ namespace vin {
 
   vin_dag::~vin_dag() 
   {
-    std::cout << " Deconstructing vin_dag\n";
     if(m_dag_tree != nullptr) 
     {
       delete m_dag_tree;
@@ -43,22 +42,14 @@ namespace vin {
     if(m_fn_manager != nullptr)
     {
       m_fn_manager->stahp();
-      std::cout << " Freeing manager memory\n";
       delete m_fn_manager;
       m_fn_manager = nullptr;
     }
 
-    for(auto spec : m_all_loaded_specs) {
-      std::cout << "Loaded spec: " << spec.name << std::endl;
-      for(auto option : spec.instantiation_options) {
-        std::cout << "Checking out option " << option.serial_id << std::endl;
-        if(option.type == OPTION_TYPE::STRING) {
-          std::cout << "Freeing value: " << option.value.string_value << std::endl;
+    for(auto spec : m_all_loaded_specs)
+      for(auto option : spec.instantiation_options)
+        if(option.type == OPTION_TYPE::STRING)
           free((void *)option.value.string_value);
-        }
-
-      }
-    }
   }
 
   int vin_dag::vin_add_node(const std::string &name, 

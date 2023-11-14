@@ -13,8 +13,6 @@ cmake_path(APPEND_STRING CMAKE_INSTALL_PREFIX "/lib/vin_libs/" OUTPUT_VARIABLE V
 # get_filename_component(VIN_LIB_DIR "${VIN_LIB_DIR}" ABSOLUTE  )
 get_filename_component(VIN_LIB_DIR "/opt/homebrew/Cellar/vin/${CMAKE_PROJECT_VERSION}/lib/vin_libs" ABSOLUTE  )
 
-message("${VIN_LIB_DIR}")
-
 include_directories("include/" ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_compile_options("-stdlib=libc++" "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-DVIN_VERSION=${CMAKE_PROJECT_VERSION}")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -52,15 +50,9 @@ find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
 
 qt_standard_project_setup()
 
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
 add_subdirectory(src)
 add_subdirectory(src/saccade_policy)
 add_subdirectory(src/qtio)
-
-
-########################################
-####### Install specification ##########
-########################################
-install(TARGETS vin1 
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin)

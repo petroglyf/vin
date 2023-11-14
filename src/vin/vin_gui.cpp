@@ -5,128 +5,110 @@
 #include <QWidget>
 #include <QSpinBox>
 #include <QCheckBox>
-
-#define XSTR(x) STR(x)
-#define STR(x) #x
+#include <QFileDialog>
 
 using namespace fn_dag;
 
-void populate_lib_list() { // QListWidget *list, vin::vin_library *library
+void populate_lib_list(QListWidget *list, vin::vin_library *library) {
   std::this_thread::sleep_for(100ms); // Wait for the window to come up
-  //TODO: Bring this back
-// #ifdef VIN_LIB_DIR
-//   auto lib_list = get_all_available_libs(fs::directory_entry(XSTR(VIN_LIB_DIR)));
-// #else
-  // auto lib_list = get_all_available_libs(fs::directory_entry("./lib"));
-// #endif
-  // auto lib_list = get_all_available_libs(fs::directory_entry("./"));
-  // for(auto entry : *lib_list) {
-  //   if(preflight_lib(entry.path())) {
-  //     auto lib_spec = fsys_load_lib(entry.path());
 
-  //     QListWidgetItem *new_item = new QListWidgetItem(lib_spec->lib_name.c_str());
-  //     new_item->setToolTip(lib_spec->detailed_description.c_str());
-  //     new_item->setStatusTip(lib_spec->simple_description.c_str());
-  //     new_item->setData(Qt::UserRole, QVariant::fromValue(lib_spec));
-  //     list->addItem(new_item);
-  //   } else {
-  //     std::cout << "Lib not loadable\n";
-  //   }
-  // }
+  for(auto lib_spec : library->get_specs()) {
+    QListWidgetItem *new_item = new QListWidgetItem(lib_spec->lib_name.c_str());
+    new_item->setToolTip(lib_spec->detailed_description.c_str());
+    new_item->setStatusTip(lib_spec->simple_description.c_str());
+    new_item->setData(Qt::UserRole, QVariant::fromValue(lib_spec));
+    list->addItem(new_item);
+  }
 }
+namespace vin {
 
 void main_window::populate_options_panel(QListWidgetItem *value, QScrollArea *scroll_area) {
-  (void)value;
-  (void)scroll_area;
-    // m_curr_lib_spec = value->data(Qt::UserRole).value<shared_ptr<lib_specification> >();
-    // m_curr_spec_handle = m_curr_lib_spec->available_options;
+  m_curr_lib_spec = value->data(Qt::UserRole).value<shared_ptr<lib_specification> >();
+  m_curr_spec_handle = &m_curr_lib_spec->available_options;
 
-    // QWidget *container_widget = new QWidget();
-    // QVBoxLayout *vlayout = new QVBoxLayout();
+  QWidget *container_widget = new QWidget();
+  QVBoxLayout *vlayout = new QVBoxLayout();
 
-    // /////////// Name for both //////////
-    // {
-    //   QHBoxLayout *hlayout = new QHBoxLayout();
-    //   QLabel *prompt = new QLabel("Name of node:");
-    //   QLineEdit *name_edit = new QLineEdit();
-    //   name_edit->setToolTip("User identifyable name of the node");
-    //   hlayout->addWidget(prompt);
-    //   hlayout->addWidget(name_edit);
-    //   QObject::connect(name_edit, &QLineEdit::textChanged,
-    //                   [=](const QString &newValue ) {
-    //                     this->m_node_name = newValue.toStdString();
-    //                   });
-    //   vlayout->addLayout(hlayout);
+  /////////// Name for both //////////
+  {
+    QHBoxLayout *hlayout = new QHBoxLayout();
+    QLabel *prompt = new QLabel("Name of node:");
+    QLineEdit *name_edit = new QLineEdit();
+    name_edit->setToolTip("User identifyable name of the node");
+    hlayout->addWidget(prompt);
+    hlayout->addWidget(name_edit);
+    QObject::connect(name_edit, &QLineEdit::textChanged,
+                    [=](const QString &newValue ) {
+                      this->m_node_name = newValue.toStdString();
+                    });
+    vlayout->addLayout(hlayout);
+  }
 
-    // }
-    // if(!m_curr_lib_spec->is_source_module) {
-    //   QHBoxLayout *hlayout = new QHBoxLayout();
-    //   QLabel *prompt = new QLabel("Select parent:");
-    //   QLineEdit *parent_edit = new QLineEdit();
-    //   parent_edit->setToolTip("User identifyable name of the node");
-    //   hlayout->addWidget(prompt);
-    //   hlayout->addWidget(parent_edit);
-    //   QObject::connect(parent_edit, &QLineEdit::textChanged,
-    //                   [=](const QString &newValue ) {
-    //                     this->m_parent_node_name = newValue.toStdString();
-    //                   });
-    //   vlayout->addLayout(hlayout);
-    // }
+  if(!m_curr_lib_spec->is_source_module) {
+    QHBoxLayout *hlayout = new QHBoxLayout();
+    QLabel *prompt = new QLabel("Select parent:");
+    QLineEdit *parent_edit = new QLineEdit();
+    parent_edit->setToolTip("User identifyable name of the node");
+    hlayout->addWidget(prompt);
+    hlayout->addWidget(parent_edit);
+    QObject::connect(parent_edit, &QLineEdit::textChanged,
+                    [=](const QString &newValue ) {
+                      this->m_parent_node_name = newValue.toStdString();
+                    });
+    vlayout->addLayout(hlayout);
+  }
 
-    // int index = 0;
-    // for(auto option : *(m_curr_lib_spec->available_options)) {
-    //   QHBoxLayout *hlayout = new QHBoxLayout();
-    //   QLabel *prompt = new QLabel(option.option_prompt.c_str());
-    //   hlayout->addWidget(prompt);
-    //   switch(option.type) {
-    //     case STRING:
-    //       {
-    //         QLineEdit *lineEdit = new QLineEdit(option.value.string_value);
-    //         lineEdit->setToolTip(option.short_description.c_str());
-    //         hlayout->addWidget(lineEdit);
-    //         QObject::connect(lineEdit, &QLineEdit::textChanged,
-    //                         [=](const QString &newValue ) {
-    //                           (*m_curr_spec_handle)[index].value.string_value = strdup(newValue.toStdString().c_str());
-    //                         }
-    //         );
-    //       }
-    //       break;
-    //     case INT:
-    //       {
-    //         QSpinBox *integer_box = new QSpinBox();
-    //         integer_box->setValue(option.value.int_value);
-    //         integer_box->setToolTip(option.short_description.c_str());
-    //         hlayout->addWidget(integer_box);
-    //       }
-    //       break;
-    //     case BOOL:
-    //       {
-    //         QCheckBox *checkbox = new QCheckBox();
-    //         checkbox->setChecked(option.value.bool_value);
-    //         checkbox->setToolTip(option.short_description.c_str());
-    //         hlayout->addWidget(checkbox);
-    //       }
-    //       break;
-    //   }
-    //   vlayout->addLayout(hlayout);
-    //   index++;
-    // }
+  for(auto option : *m_curr_spec_handle) {
+    QHBoxLayout *hlayout = new QHBoxLayout();
+    QLabel *prompt = new QLabel(option.option_prompt);
+    hlayout->addWidget(prompt);
+    switch(option.type) {
+      case STRING:
+        {
+          QLineEdit *lineEdit = new QLineEdit(option.value.string_value);
+          lineEdit->setToolTip(option.short_description);
+          hlayout->addWidget(lineEdit);
+        }
+        break;
+      case INT:
+        {
+          QSpinBox *integer_box = new QSpinBox();
+          integer_box->setValue(option.value.int_value);
+          integer_box->setToolTip(option.short_description);
+          hlayout->addWidget(integer_box);
+        }
+        break;
+      case BOOL:
+        {
+          QCheckBox *checkbox = new QCheckBox();
+          checkbox->setChecked(option.value.bool_value);
+          checkbox->setToolTip(option.short_description);
+          hlayout->addWidget(checkbox);
+        }
+        break;
+    }
+    vlayout->addLayout(hlayout);
+  }
 
-    // container_widget->setLayout(vlayout);
-    // scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    // scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    // scroll_area->setWidget(container_widget);
-    // scroll_area->setEnabled(true);
-    // vlayout->addStretch();
+  container_widget->setLayout(vlayout);
+  scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scroll_area->setWidget(container_widget);
+  scroll_area->setEnabled(true);
+  vlayout->addStretch();
 }
 
-main_window::main_window() : m_curr_spec_handle(nullptr), m_curr_lib_spec(nullptr), m_dag() {
+main_window::main_window(vin_library *_library) : 
+                                        m_curr_spec_handle(nullptr), 
+                                        m_curr_lib_spec(nullptr), 
+                                        m_dag() {
   main_ui_window.setupUi(this);
   list = main_ui_window.available_libs;
 
   QObject::connect(
     list, &QListWidget::itemClicked,
     this, &main_window::refresh_options_panel);
+
   QObject::connect( 
     main_ui_window.create_button, &QPushButton::released,
     this, &main_window::handle_create);
@@ -140,6 +122,8 @@ main_window::main_window() : m_curr_spec_handle(nullptr), m_curr_lib_spec(nullpt
     this, &main_window::load);
 
   m_dag.initialize_view(main_ui_window.current_dag);
+
+  populate_lib_list(list, _library);
 }
 
 main_window::~main_window() {}
@@ -152,6 +136,7 @@ void main_window::refresh_options_panel( QListWidgetItem *value ) {
 }
 
 void main_window::handle_create() {
+  std::cout << "Create pressed\n";
   if(m_curr_spec_handle != nullptr) {
     for(auto option : *m_curr_spec_handle) {
       std::cout << option.option_prompt << ": ";
@@ -181,13 +166,21 @@ void main_window::handle_create() {
 }
 
 void main_window::save() {
-  std::cout << "Save\n";
-  //TODO: File dialog
-  m_dag.serialize("test.json");
+  QString filename = QFileDialog::getSaveFileName(this,
+    tr("Save file to.."), ".", tr("JSON Files (*.json)"));
+  if(filename.length() > 0) {
+    std::cout << "Saving to : " << filename.toStdString() << std::endl;
+    //TODO: Actually save
+    // m_dag.serialize("test.json");
+  }
 }
 
-void main_window::load() {
-  std::cout << "Load\n";
+void main_window::load() {  
+  QString filename = QFileDialog::getOpenFileName(this,
+    tr("Save file to.."), ".", tr("JSON Files (*.json)"));
+  std::cout << "Opening file : " << filename.toStdString() << std::endl;
+
+  //TODO actually load
 }
 
-
+} // namespace vin

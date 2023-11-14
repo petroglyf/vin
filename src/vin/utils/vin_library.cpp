@@ -58,4 +58,8 @@ namespace vin {
   std::unordered_map<uint32_t, fn_dag::instantiate_fn> &vin_library::get_library() {
     return m_library;
   }
+
+  std::vector<std::shared_ptr<lib_specification>> &vin_library::get_specs() {
+    return m_library_specs;
+  }
 } // namespace vin
