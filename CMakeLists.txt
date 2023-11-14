@@ -47,6 +47,7 @@ set(CMAKE_AUTORCC ON)
 
 ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 find_package(Qt6 COMPONENTS Widgets Multimedia MultimediaWidgets REQUIRED)
+find_package(Catch2 3 REQUIRED)
 
 qt_standard_project_setup()
 
@@ -56,3 +57,19 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 add_subdirectory(src)
 add_subdirectory(src/saccade_policy)
 add_subdirectory(src/qtio)
+
+########################################
+####### Build the testing files ########
+########################################
+if (DEFINED Catch2_DIR)
+  add_executable(tests test/vin/vin_library_tests.cpp
+                       src/vin/utils/vin_library.cpp
+                       src/vin/utils/lib_specification.cpp)
+  target_include_directories(tests PRIVATE "include/" ${CATCH_INCLUDE_DIR})
+  target_link_directories(tests PRIVATE ${CATCH_LIBRARY_DIRS})
+  target_link_libraries(tests FunctionalDag::functional_dag Catch2::Catch2WithMain)
+
+  include(CTest)
+  include(Catch)
+  catch_discover_tests(tests)
+endif()
