@@ -5,7 +5,7 @@ class Vin < Formula
   homepage "https://github.com/petrogly-ph/vin"
   url "https://github.com/petrogly-ph/vin/archive/refs/tags/v0.5saccade.tar.gz"
   # url "file:///Users/drobotnik/projects/vin/"
-  sha256 "0a95d556cc1768e90a96ee87cc5b1a8a2423d353a30a8c5b10efa6c7f72325bf"
+  sha256 "39f8d3fbfc337d758429bf651c32b06b1ac0539d114724d92536850665acff67"
   license "MIT"
   version "0.7"
 
@@ -18,7 +18,7 @@ class Vin < Formula
 
   depends_on "cmake" => :build
   depends_on "qt@6" => :build
-  depends_on "functional-dag@0.5" => :build
+  depends_on "functional-dag" => :build
   depends_on "clang-tidy" => :build
 
   depends_on "catch2" => :test
