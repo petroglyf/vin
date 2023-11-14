@@ -30,6 +30,9 @@
 #include "vin/vin_gui.hpp"
 #include "vin/utils/vin_library.hpp"
 
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
 std::atomic_bool SHOULD_QUIT;
 
 using namespace std::placeholders;
@@ -46,7 +49,7 @@ int main(int argc, char *argv[])
   QApplication app(argc, argv);
 
   QCoreApplication::setApplicationName("VIN");
-  QCoreApplication::setApplicationVersion("0.8");
+  QCoreApplication::setApplicationVersion(XSTR(VIN_VERSION));
 
   QCommandLineParser parser;
   parser.setApplicationDescription("Video INput: a functional DAG for visualizing DLTensors");
@@ -79,39 +82,29 @@ int main(int argc, char *argv[])
     QString targetFile = parser.value(loadDagOption);
     vin::vin_dag manager; 
 
-    // QMetaObject::invokeMethod(qApp, [&]() {
-    //   std::cout << "Waiting to load file\n";
-    //   this_thread::sleep_for(1000ms);
-    //   std::cout << "Loading stuff\n";
-    //   manager.load_from_file(targetFile.toStdString(), library.get_library());
-    //   std::cout << "Continue\n";
-    //   do {
-    //     this_thread::sleep_for(300ms);
-    //   } while(!SHOULD_QUIT);
-    // });
-
-    std::thread run_thread([&]() {
+    auto run_thread = std::async([&]() {
       this_thread::sleep_for(1000ms); 
-      manager.load_from_file(targetFile.toStdString(), library.get_library());
-
-      do {
-        this_thread::sleep_for(300ms);
-      } while(!SHOULD_QUIT);
+      if(manager.load_from_file(targetFile.toStdString(), library.get_library())) {
+        do {
+          this_thread::sleep_for(300ms);
+        } while(!SHOULD_QUIT);
+        return 0;
+      }
+      return 1;
     });
     
-    app.exec();
-    run_thread.join();
+    auto status = run_thread.wait_for(6s);
+    if(status != std::future_status::ready) {
+      app.exec();
+      run_thread.wait();
+    }
+    
     manager.shutdown();
   } else {
-    main_window main_window;
-    // std::thread list_thread(populate_lib_list, main_window.list, &library);
+    main_window main_window(&library);
     main_window.show();
 
-    int ret_code = app.exec();
-
-    // list_thread.join();
-    
-    return ret_code;
+    app.exec();
   }
   return 0;
 }

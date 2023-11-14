@@ -16,7 +16,7 @@ public:
   string simple_description;
   bool is_source_module;
   string detailed_description;
-  shared_ptr<fn_dag::lib_options> available_options;
+  fn_dag::lib_options available_options;
   module_getter_fn module_handle;
   
   shared_ptr<fn_dag::module> instantiate(const fn_dag::lib_options &options);

@@ -9,23 +9,23 @@
 
 uint64_t gradient_next_state(uint64_t prev_state, const DLTensor *heatmap);
 
-enum POLICY_TYPE {
+enum policy_type {
   CONSTANT, RANDOM, SALIENCY
 };
 
-static uint64_t timeSinceEpochMillisec() {
+static uint64_t epoch_time_ms() {
   using namespace std::chrono;
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 template <typename T> 
 int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
+  return (T(0) < val) - (val < T(0));
 }
 
 class saccade_op : public fn_dag::module_transmit {
 public:
-  saccade_op(POLICY_TYPE _op_code, const uint8_t _n_points) 
+  saccade_op(policy_type _op_code, const uint8_t _n_points) 
                             : m_op_code(_op_code),
                               m_npts(_n_points),
                               m_is_initialized(false)
@@ -70,31 +70,20 @@ public:
         prev_points[i*2] = random() % max_x;
         prev_points[i*2+1] = random() % max_y;
       }
-      m_last_update_ms = timeSinceEpochMillisec();
+      m_last_update_ms = epoch_time_ms();
       m_is_initialized = true;
     }
 
     switch(m_op_code) {
-      
       case RANDOM:
-        if(timeSinceEpochMillisec() - m_last_update_ms > 3000) {
+        if(epoch_time_ms() - m_last_update_ms > 3000) {
           for(uint32_t i = 0;i < m_npts;i++) {
             prev_gpoints[i*2] = random() % max_x;
             prev_gpoints[i*2+1] = random() % max_y;
           }
-          m_last_update_ms = timeSinceEpochMillisec();
+          m_last_update_ms = epoch_time_ms();
         }
       case CONSTANT:
-        // // move all of the points toward the goal points
-        // for(uint32_t i = 0;i < m_npts;i++) {
-        //   std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
-        //     // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
-        //     int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
-        //     return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
-        //   };
-        //   prev_points[i*2] += get_delt(prev_points[i*2], prev_gpoints[i*2]);
-        //   prev_points[i*2+1] += get_delt(prev_points[i*2+1], prev_gpoints[i*2+1]);
-        // }
         break;
       case SALIENCY:
         for(uint32_t i = 0;i < m_npts;i++) {
@@ -104,17 +93,16 @@ public:
           
           prev_gpoints[i*2] = next_state >> 32;
           prev_gpoints[i*2+1] = (next_state << 32) >> 32;
-          std::cout << "next state: " << (int)prev_points[i*2] << ", " << (int)prev_points[i*2+1] << std::endl;
         }
         break;
       default:
         std::cout << "skipping, defaulting to constant\n";
         return nullptr;
     }
+
     // move all of the points toward the goal points
     for(uint32_t i = 0;i < m_npts;i++) {
       std::function<uint32_t(uint32_t, uint32_t)> get_delt = [](uint32_t prev_coord, uint32_t goal_coord) {
-        // return min(max(abs(goal_coord-prev_coord) / 2, 8), 1)*sign(goal_coord-prev_coord);
         int32_t dx = (int32_t)goal_coord-(int32_t)prev_coord;
         return std::max(std::min(abs(dx) / 2, 13), 1)*sgn(dx);
       };
@@ -128,17 +116,13 @@ public:
   }
 
 private:
-  POLICY_TYPE m_op_code;
+  policy_type m_op_code;
   uint32_t m_npts;
   uint32_t *prev_gpoints;
   uint32_t *prev_points;
   bool m_is_initialized;
   uint64_t m_last_update_ms;
 };
-
-
-
-
 
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
 
@@ -167,13 +151,12 @@ extern "C" DL_EXPORT bool is_source() {
   return false;
 }
 
-extern "C" DL_EXPORT shared_ptr<fn_dag::lib_options> get_options() {
-  shared_ptr<fn_dag::lib_options> options(new fn_dag::lib_options());
-  return options;
+extern "C" DL_EXPORT fn_dag::lib_options get_options() {
+  return fn_dag::lib_options();
 }
 
 extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *options) {
   (void)options;
-  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(POLICY_TYPE::SALIENCY, 3));
+  fn_dag::module_handler *vlc_out = new fn_dag::module_handler(new saccade_op(policy_type::SALIENCY, 3));
   return (fn_dag::module *)vlc_out;
 }

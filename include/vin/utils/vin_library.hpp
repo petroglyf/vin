@@ -15,6 +15,8 @@ namespace vin {
 
     int initialize();
     std::unordered_map<uint32_t, fn_dag::instantiate_fn> &get_library();
+
+    std::vector<std::shared_ptr<lib_specification>> &get_specs();
   private:
     std::vector<fs::directory_entry> m_location_of_libraries;
     std::vector<std::shared_ptr<lib_specification>> m_library_specs;

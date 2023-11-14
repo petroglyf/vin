@@ -22,22 +22,21 @@ namespace vin {
   class vin_dag {
   public:
     vin_dag();
-    
     ~vin_dag();
 
     int vin_add_node(const std::string &name, 
                       const uint32_t guid,
                       fn_dag::module_transmit *dag_node, 
-                      shared_ptr<fn_dag::lib_options> options,
+                      fn_dag::lib_options *options,
                       const std::string &parent_name);
     int vin_add_src(const std::string &name, 
                       const uint32_t guid,
-                      shared_ptr<fn_dag::lib_options> options,  
+                      fn_dag::lib_options *options,  
                       fn_dag::module_source *dag_node);
 
     void serialize(fs::path file_name);
-    void load_from_file(fs::path, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &);
-    void initializeView(QTreeWidget *_view);
+    int load_from_file(fs::path, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &);
+    void initialize_view(QTreeWidget *_view);
     void shutdown();
   
   private: 

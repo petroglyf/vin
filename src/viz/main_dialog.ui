@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PutItUp</class>
- <widget class="QMainWindow" name="PutItUp">
+ <class>main_win</class>
+ <widget class="QMainWindow" name="main_win">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,12 +11,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Vin visualizer</string>
+   <string>Video-in visualizer</string>
   </property>
   <widget class="QWidget" name="frame_layout">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="left_vert">
       <property name="sizeConstraint">
        <enum>QLayout::SetMaximumSize</enum>
       </property>
@@ -53,7 +53,7 @@
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
         </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
+        <widget class="QWidget" name="options_scroll_area">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -67,7 +67,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="__button_horiz">
+       <layout class="QHBoxLayout" name="buttons_array">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>

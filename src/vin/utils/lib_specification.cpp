@@ -14,8 +14,8 @@ void lib_specification::load_lib() {
   using string_getter_fn = string (*)();
   using bool_getter_fn = bool (*)();
   using long_getter_fn = long (*)();
-  using options_getter_fn = shared_ptr<lib_options> (*)();
-  
+  using options_getter_fn = lib_options (*)();
+
   void *guid_get_fn = dlsym(lib_handle, "get_serial_guid");
   serial_id_guid = (long_getter_fn(guid_get_fn)());
 
@@ -38,14 +38,13 @@ void lib_specification::load_lib() {
   module_handle = module_getter_fn(get_module_fn);
 }
 
-shared_ptr<module> lib_specification::instantiate(const lib_options &options) {
+shared_ptr<module> lib_specification::instantiate(const fn_dag::lib_options &options) {
   module *new_module = module_handle(&options);
   return shared_ptr<module>(new_module);
 }
 
 lib_specification::~lib_specification() {
-  if(lib_handle != nullptr) {
+  if(lib_handle != nullptr)
     dlclose(lib_handle);
-  }
   lib_handle = nullptr;
 }
