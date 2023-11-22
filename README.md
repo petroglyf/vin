@@ -1,5 +1,10 @@
-# vin : The Video INput library
-![image](https://github.com/petrogly-ph/vin/assets/3150543/2e1181e7-7a8a-466b-979c-ecb515c77722)
+<table style="border-collapse: collapse; border: none;" cellspacing="0" border="0px" cellpadding="0">
+<tr>
+  <td width=70%><h1>vin : The Video INput library</h1></td>
+  <td><img src="https://github.com/petrogly-ph/vin/assets/3150543/2e1181e7-7a8a-466b-979c-ecb515c77722" width="40%" height="40%" align="right"></td>
+</tr>
+</table>
+
 
 The vin library is minimal (Qt only) support for media capture and visualization. It is meant to bookend the [functional-dag](https://github.com/petrogly-ph/functional-dag/) so that other cognitive components can rely on these pieces and build the real architecture. 
 
