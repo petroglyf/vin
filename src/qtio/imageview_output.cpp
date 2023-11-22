@@ -7,6 +7,7 @@ using namespace vin;
 class QtViewer : public fn_dag::module_transmit {
 public:
   QtViewer(): frame(nullptr), imagePanel(nullptr) {
+    
     // qApp is reserved and is inherited from QLabel
     QMetaObject::invokeMethod(qApp, [this](){
       this->start(); // Start the widget thread so the callbacks work.
@@ -16,7 +17,6 @@ public:
   void start() {
     frame = new QFrame();
     QHBoxLayout *lay = new QHBoxLayout(frame);
-    
     imagePanel = new image_view();
     lay->addWidget(imagePanel);
 
@@ -25,6 +25,9 @@ public:
   }
 
   DLTensor *update(const DLTensor *image) {
+    if(imagePanel == nullptr) 
+      return nullptr;
+
     if(image != nullptr && image->ndim == 3) {
       switch(image->shape[0]) {
       case 1:
@@ -59,7 +62,7 @@ public:
           imagePanel->draw_box(x, y, width, height);
         }
       }
-    }else
+    } else
       std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
     return nullptr;
   }

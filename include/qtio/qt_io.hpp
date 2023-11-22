@@ -19,12 +19,18 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QCamera>
+#include <QMediaCaptureSession>
 #include <QVideoSink>
 #include <QThread>
 #include <QBuffer>
 #include <QtWidgets/QLabel>
 #include "functional_dag/lib_utils.h"
 
+
+enum qt_source {
+  VIDEO, CAMERA
+};
 
 class qt_video_player : public QThread, public fn_dag::module_source
 {
@@ -74,12 +80,20 @@ public:
   void frame_changed(const QVideoFrame &frame);
 
 private:
-    QMediaPlayer *m_player;               // Player object for Qt 
-    QVideoSink   *m_surface_for_player;   // A surface for Qt to draw to
-    std::string m_specified_url;          // The specified URL of the video file
-    uint32_t m_width;                     // The output width of the image
-    uint32_t m_height;                    // The output height of the image
-    std::mutex m_mutex;                   // A mutex to get/set the atomic image
-    std::condition_variable m_condition;  // A condition variable for the mutex
-    std::queue<DLTensor *> m_frame_queue; // A queue for the last few frames
+  qt_source m_source_type;
+
+  // Camera related objects
+  QCamera *m_camera;                    // Camera object for Qt 
+  QMediaCaptureSession *m_capture;
+
+  // Video related objects
+  QMediaPlayer *m_player;               // Player object for Qt
+  std::string m_specified_url;          // The specified URL of the video file
+
+  QVideoSink   *m_surface_for_player;   // A surface for Qt to draw to
+  uint32_t m_width;                     // The output width of the image
+  uint32_t m_height;                    // The output height of the image
+  std::mutex m_mutex;                   // A mutex to get/set the atomic image
+  std::condition_variable m_condition;  // A condition variable for the mutex
+  std::queue<DLTensor *> m_frame_queue; // A queue for the last few frames
 };

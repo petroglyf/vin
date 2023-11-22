@@ -13,6 +13,8 @@ qt_wrap_ui(SOURCES viz/main_dialog.ui)
 qt_add_executable(vin ${SOURCES})
 
 target_link_libraries(vin PUBLIC Qt6::Core Qt6::Widgets FunctionalDag::functional_dag)
+set_target_properties(vin
+        PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
 
 ########################################
 ####### Install specification ##########
