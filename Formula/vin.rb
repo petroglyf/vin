@@ -3,9 +3,9 @@ require "formula"
 class Vin < Formula
   desc "Executable for managing filtergraphs for vision"
   homepage "https://github.com/petrogly-ph/vin"
-  url "https://github.com/petrogly-ph/vin/archive/refs/tags/v0.5saccade.tar.gz"
+  url "https://github.com/petrogly-ph/vin/archive/refs/tags/v0.5pre.release.tar.gz"
   # url "file:///Users/drobotnik/projects/vin/"
-  sha256 "39f8d3fbfc337d758429bf651c32b06b1ac0539d114724d92536850665acff67"
+  sha256 "0d7aefe30432f9d036d98b36806a7e3a3e41032518c2c35ae222d9c98f55ab0f"
   license "MIT"
   version "0.7"
 
