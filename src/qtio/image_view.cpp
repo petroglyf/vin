@@ -277,14 +277,16 @@ namespace vin {
     {1.0, 1.0, 0.9845588080882198, 1.0},
     {1.0, 1.0, 1.0, 1.0}};
 
-  Q_DECL_EXPORT image_view::image_view(QWidget *parent) : QLabel(parent) {
+  Q_DECL_EXPORT image_view::image_view(QWidget *parent) 
+                                            : QLabel(parent),
+                                            m_gaze_pts_mutex() {
     setAlignment(Qt::AlignCenter);
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   }
 
   image_view::~image_view() {}
 
-  void image_view::set_gaze_pts(std::vector< std::tuple<uint32_t, uint32_t> > new_pts) {
+  void image_view::set_gaze_pts(std::vector< std::tuple<uint32_t, uint32_t> > &new_pts) {
     std::scoped_lock fn_lock(m_gaze_pts_mutex);
     m_gaze_pts.swap(new_pts);
   }
@@ -303,7 +305,7 @@ namespace vin {
   void image_view::set_tensor(const DLTensor &tensor, const visualization_mode mode) {
     int width, height;
     uint8_t* img_data;
-
+    
     clear_overlay();
     {
       std::scoped_lock draw_lock(m_gaze_pts_mutex);

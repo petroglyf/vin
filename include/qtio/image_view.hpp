@@ -64,7 +64,7 @@ namespace vin
      * 
      * @param new_Pts a list of points in the image to render rectangles
     */
-    void set_gaze_pts(std::vector< xy_pt > new_pts);
+    void set_gaze_pts(std::vector< xy_pt > &new_pts);
 
     /** A function to set what image to display next
      * 
