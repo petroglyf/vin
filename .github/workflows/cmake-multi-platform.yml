@@ -58,8 +58,8 @@ jobs:
       id: petroglyph-ppa
       shell: bash
       run: |
-        curl -s --compressed "https://petrgly-ph.github.io/ppa/KEY.gpg" | gpg --dearmor | tee /etc/apt/trusted.gpg.d/ppa.gpg >/dev/null
-        curl -s --compressed -o /etc/apt/sources.list.d/pg-packages.list "https://petrogly-ph.github.io/my_ppa/packages.list"
+        curl -s --compressed "https://petrgly-ph.github.io/ppa/KEY.gpg" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ppa.gpg >/dev/null
+        sudo curl -s --compressed -o /etc/apt/sources.list.d/pg-packages.list "https://petrogly-ph.github.io/my_ppa/packages.list"
 
     - name: Install dependencies if ARM64
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
