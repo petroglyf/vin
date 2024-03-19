@@ -53,6 +53,7 @@ option (BUILD_GAZE_OPS "Build gaze ops support" ON)
 ##########################################
 find_package(PkgConfig REQUIRED)
 find_package(functional_dag REQUIRED)
+pkg_check_modules(JSONCPP REQUIRED IMPORTED_TARGET jsoncpp)
 
 set(CMAKE_AUTOUIC ON)  
 set(CMAKE_AUTOMOC ON)
