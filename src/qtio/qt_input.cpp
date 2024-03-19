@@ -177,7 +177,9 @@ DLTensor *qt_video_player::update()
   return val;
 }
 
+#ifdef __clang__
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
+#endif
 
 #define DL_EXPORT __attribute__((visibility("default")))
 
