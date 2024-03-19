@@ -227,7 +227,8 @@ extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *optio
     return nullptr;
 
   std::string file_path;
-  int32_t width, height;
+  int32_t width = 0;
+  int32_t height = 0;
 
   for (auto option : *options)
   {
