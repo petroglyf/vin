@@ -2,6 +2,7 @@
 #include "vin/error_codes.hpp"
 #include "vin/utils/lib_specification.hpp"
 #include <dlfcn.h>
+#include <functional>
 
 #define XSTR(x) STR(x)
 #define STR(x) #x

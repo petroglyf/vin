@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+#include <cstring> 
 
 #include <functional_dag/dlpack.h>
 #include <functional_dag/lib_utils.h>
@@ -124,7 +125,9 @@ private:
   uint64_t m_last_update_ms;
 };
 
+#ifdef __clang__
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
+#endif 
 
 #define DL_EXPORT __attribute__ ((visibility ("default")))
 

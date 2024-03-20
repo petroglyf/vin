@@ -38,7 +38,7 @@ void main_window::populate_options_panel(QListWidgetItem *value, QScrollArea *sc
     hlayout->addWidget(prompt);
     hlayout->addWidget(name_edit);
     QObject::connect(name_edit, &QLineEdit::textChanged,
-                    [=](const QString &newValue ) {
+                    [this](const QString &newValue ) {
                       this->m_node_name = newValue.toStdString();
                     });
     vlayout->addLayout(hlayout);
@@ -52,7 +52,7 @@ void main_window::populate_options_panel(QListWidgetItem *value, QScrollArea *sc
     hlayout->addWidget(prompt);
     hlayout->addWidget(parent_edit);
     QObject::connect(parent_edit, &QLineEdit::textChanged,
-                    [=](const QString &newValue ) {
+                    [this](const QString &newValue ) {
                       this->m_parent_node_name = newValue.toStdString();
                     });
     vlayout->addLayout(hlayout);

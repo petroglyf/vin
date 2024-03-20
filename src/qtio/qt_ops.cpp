@@ -77,7 +77,9 @@ public:
   }
 };
 
+#ifdef __clang__
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
+#endif
 
 #define DL_EXPORT __attribute__ ((visibility ("default")))
 
@@ -109,7 +111,8 @@ extern "C" DL_EXPORT fn_dag::module *get_module(const fn_dag::lib_options *optio
   if(options->size() != 2)
     return nullptr;
 
-  int32_t width, height;
+  int32_t width = 0;
+  int32_t height = 0;
 
   for(auto option : *options) {
     switch(option.serial_id) {
