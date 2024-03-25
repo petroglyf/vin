@@ -114,8 +114,14 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libjsoncpp25 (>= 1.9), libc6 (>= 2), libqt6mul
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VIN is a set of tools to integrate simple video into minimal DAGs for processing."
     CACHE STRING "This tool uses the minimal functional dag and uses Qt to read video streams for later processing. There is a set of Qt ops for operating on the video like resizing and viewing. VIN is mostly agnostic about what happens in the middle.")
 
-set(CPACK_PACKAGE_NAME ${PROJECT_NAME}
-    CACHE STRING "VIN is a tool for reading and processing video streams. Minimally with the fewest smallest dependencies.")
+if (NOT CLI_ONLY)
+  set(CPACK_PACKAGE_NAME ${PROJECT_NAME}
+      CACHE STRING "VIN is a tool for reading and processing video streams. Minimally with the fewest smallest dependencies.")
+else ()
+  set(CPACK_PACKAGE_NAME ${PROJECT_NAME}-cli
+      CACHE STRING "VIN is a tool for reading and processing video streams. Minimally with the fewest smallest dependencies.")
+endif ()
+
 set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}-${CMAKE_PROJECT_VERSION}.${ARCHITECTURE_ID})
 
 
