@@ -98,10 +98,10 @@ void main_window::populate_options_panel(QListWidgetItem *value, QScrollArea *sc
   vlayout->addStretch();
 }
 
-main_window::main_window(vin_library *_library) : 
+main_window::main_window(vin_library *_library, fn_dag::dag_manager<std::string>* const _fn_manager) : 
                                         m_curr_spec_handle(nullptr), 
                                         m_curr_lib_spec(nullptr), 
-                                        m_dag() {
+                                        m_dag(_fn_manager) {
   main_ui_window.setupUi(this);
   list = main_ui_window.available_libs;
 

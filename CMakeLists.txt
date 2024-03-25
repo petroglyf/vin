@@ -11,6 +11,8 @@ if (NOT DEFINED ARCHITECTURE_ID)
   set (ARCHITECTURE_ID "apple")
 endif ()
 
+option (CLI_ONLY "Build VIN so that it doesn't require a GUI" ON)
+
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -28,6 +30,10 @@ endif ()
 
 include_directories("include/" ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_compile_options("-Wall" "-Wextra" "-Wpedantic" "-Werror" "-DVIN_VERSION=${CMAKE_PROJECT_VERSION}")
+if (CLI_ONLY)
+  add_compile_options("-DCLI_ONLY")
+endif ()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option (DEBUG "Build debug version" ON)

@@ -9,10 +9,7 @@
 using namespace fn_dag;
 
 namespace vin {
-  vin_dag::vin_dag() : m_dag_tree(nullptr), m_all_loaded_specs() {
-    m_fn_manager = new fn_dag::dag_manager<std::string>();
-    m_fn_manager->run_single_threaded(true);
-  }
+  vin_dag::vin_dag(fn_dag::dag_manager<std::string>* const _fn_manager) : m_dag_tree(nullptr), m_fn_manager(_fn_manager), m_all_loaded_specs() {}
 
   void vin_dag::initialize_view(QTreeWidget *_view) {
     m_dag_tree = _view;
@@ -22,11 +19,7 @@ namespace vin {
     items.append(m_rootitem);
   
     if(m_fn_manager != nullptr) 
-    {
       m_fn_manager->stahp();
-      delete m_fn_manager;
-      m_fn_manager = nullptr;
-    }
 
     m_dag_tree->addTopLevelItems(items);
   }
@@ -40,12 +33,8 @@ namespace vin {
     }
 
     if(m_fn_manager != nullptr)
-    {
       m_fn_manager->stahp();
-      delete m_fn_manager;
-      m_fn_manager = nullptr;
-    }
-
+    
     for(auto spec : m_all_loaded_specs)
       for(auto option : spec.instantiation_options)
         if(option.type == OPTION_TYPE::STRING)
@@ -141,33 +130,5 @@ namespace vin {
   void vin_dag::shutdown() {
     if(m_fn_manager != nullptr) 
       m_fn_manager->stahp();
-  }
-
-  int vin_dag::load_from_file(const fs::path file_name, const std::unordered_map<uint32_t, fn_dag::instantiate_fn> &library) 
-  {
-    std::cout << "Opening file " << file_name << std::endl;
-    std::ifstream ifstream(file_name);
-    if(ifstream.is_open()) {
-      std::stringstream buffer;
-      buffer << ifstream.rdbuf();
-      const std::string all_contents = buffer.str();
-      delete m_fn_manager;
-      for(auto entry : library) {
-        std::cout << entry.first << std::endl;
-      }
-      m_fn_manager = fsys_deserialize(all_contents, library);
-      if(m_fn_manager != nullptr)
-        m_fn_manager->run_single_threaded(true);
-    }
-    ifstream.close();
-
-    if(m_fn_manager == nullptr) {
-      std::cerr << "Unable to deserialize the compute dag..\n";
-      return 0;
-    } else {
-      m_fn_manager->print_all_dags();
-      std::cout << "Setup complete\n\n";
-    }
-    return 1;
   }
 }

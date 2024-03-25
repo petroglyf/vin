@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include <QThread>
-#include <QApplication>
 #include <QEventLoop>
 #include <QCoreApplication>
 #include <QVideoFrame>

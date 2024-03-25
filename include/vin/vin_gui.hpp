@@ -30,7 +30,7 @@ namespace vin {
     Ui::main_win main_ui_window;
     QListWidget *list;
 
-    main_window(vin_library *_library);
+    main_window(vin_library *_library, fn_dag::dag_manager<std::string>* const _fn_manager);
     ~main_window();
 
   private:  
