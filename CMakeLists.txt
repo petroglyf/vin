@@ -11,7 +11,7 @@ if (NOT DEFINED ARCHITECTURE_ID)
   set (ARCHITECTURE_ID "apple")
 endif ()
 
-option (CLI_ONLY "Build VIN so that it doesn't require a GUI" ON)
+option (CLI_ONLY "Build VIN so that it doesn't require a GUI" OFF)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
