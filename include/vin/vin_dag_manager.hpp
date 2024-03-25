@@ -21,7 +21,7 @@
 namespace vin {
   class vin_dag {
   public:
-    vin_dag();
+    vin_dag(fn_dag::dag_manager<std::string>* const _fn_manager);
     ~vin_dag();
 
     int vin_add_node(const std::string &name, 
@@ -41,7 +41,7 @@ namespace vin {
   
   private: 
     QTreeWidget *m_dag_tree;
-    fn_dag::dag_manager<std::string> *m_fn_manager;
+    fn_dag::dag_manager<std::string> * const m_fn_manager;
     vector<fn_dag::library_spec> m_all_loaded_specs;
     QTreeWidgetItem *m_rootitem;
   };

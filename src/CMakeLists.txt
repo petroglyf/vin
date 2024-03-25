@@ -3,16 +3,26 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FUNCTIONALDAG_CXX_FLAGS} ${VIZ_CXX_FLA
 ##########################################
 ###### Actual VIN specification  #########
 ##########################################
-set(SOURCES vin/main.cpp
-            vin/vin_dag_manager.cpp
-            vin/vin_gui.cpp
-            vin/utils/lib_specification.cpp
-            vin/utils/vin_library.cpp)
+if (NOT CLI_ONLY)
+  set(SOURCES vin/main.cpp
+              vin/vin_dag_manager.cpp
+              vin/vin_gui.cpp
+              vin/utils/lib_specification.cpp
+              vin/utils/vin_library.cpp)
+else ()
+  set(SOURCES vin/main.cpp
+              vin/utils/lib_specification.cpp
+              vin/utils/vin_library.cpp)
+endif ()
 
 qt_wrap_ui(SOURCES viz/main_dialog.ui)
 qt_add_executable(vin ${SOURCES})
 
-target_link_libraries(vin PUBLIC Qt6::Core Qt6::Widgets FunctionalDag::functional_dag ${JSONCPP_LIBRARIES})
+if (NOT CLI_ONLY)
+  target_link_libraries(vin PUBLIC Qt6::Core FunctionalDag::functional_dag Qt6::Widgets) # ${JSONCPP_LIBRARIES}
+else ()
+  target_link_libraries(vin PUBLIC Qt6::Core FunctionalDag::functional_dag) # ${JSONCPP_LIBRARIES}
+endif ()
 set_target_properties(vin
         PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
 
