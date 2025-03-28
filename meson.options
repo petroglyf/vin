@@ -1,0 +1,35 @@
+option(
+    'ARCH_ID',
+    type: 'combo',
+    choices: ['apple', 'arm64', 'amd64'],
+    value: 'apple',
+    description: 'Which architecture we are building for.',
+)
+
+option(
+    'CLI_ONLY',
+    type: 'boolean',
+    value: false,
+    description: 'Build only the CLI with no GUI support.',
+)
+
+option(
+    'BUILD_QTIO',
+    type: 'boolean',
+    value: true,
+    description: 'Build input/output support for cameras and videos.',
+)
+
+option(
+    'BUILD_QTOP',
+    type: 'boolean',
+    value: true,
+    description: 'Build ops support for simple image operators.',
+)
+
+option(
+    'BUILD_OPTIMS',
+    type: 'boolean',
+    value: true,
+    description: 'Build optimisation algorithms support.',
+)

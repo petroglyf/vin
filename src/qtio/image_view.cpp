@@ -1,26 +1,26 @@
 /**
- *           _________ _       
+ *           _________ _
  *  |\     /|\__   __/( (    /|
  *  | )   ( |   ) (   |  \  ( |
  *  ( (   ) )   | |   | (\ \) |
  *   \ \_/ /    | |   | | \   |
  *    \   /  ___) (___| )  \  |
  *     \_/   \_______/|/    )_)
- *                             
- * 
+ *
+ *
  * image_view displays RGB and heat maps for the data being streamed.
- * 
+ *
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
- */ 
+ */
 #include "qtio/image_view.hpp"
+
 #include <QPainter>
-#include <iostream>
 
 namespace vin {
-  // Instead of generating this, we're just using what was in matplotlib.
-  static const float __HOT_COLORMAP__[][4] = 
-    {{0.0416, 0.0, 0.0, 1.0},
+// Instead of generating this, we're just using what was in matplotlib.
+static const float __HOT_COLORMAP__[][4] = {
+    {0.0416, 0.0, 0.0, 1.0},
     {0.05189484405443485, 0.0, 0.0, 1.0},
     {0.0621896881088697, 0.0, 0.0, 1.0},
     {0.07248453216330454, 0.0, 0.0, 1.0},
@@ -277,95 +277,97 @@ namespace vin {
     {1.0, 1.0, 0.9845588080882198, 1.0},
     {1.0, 1.0, 1.0, 1.0}};
 
-  Q_DECL_EXPORT image_view::image_view(QWidget *parent) 
-                                            : QLabel(parent),
-                                            m_gaze_pts_mutex() {
-    setAlignment(Qt::AlignCenter);
-    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+Q_DECL_EXPORT image_view::image_view(QWidget *parent)
+    : QLabel(parent), m_gaze_pts_mutex() {
+  setAlignment(Qt::AlignCenter);
+  setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+}
+
+image_view::~image_view() {}
+
+void image_view::set_gaze_pts(
+    std::vector<std::tuple<uint32_t, uint32_t> > &new_pts) {
+  std::scoped_lock fn_lock(m_gaze_pts_mutex);
+  m_gaze_pts.swap(new_pts);
+}
+
+static QVector<QRgb> getHotColorMap() {
+  QVector<QRgb> colorTable(256);
+  for (int i = 0; i < 255; i++) {
+    const float *color = __HOT_COLORMAP__[i];
+    colorTable[i] = qRgb(255 * color[0], 255 * color[1], 255 * color[2]);
   }
+  return colorTable;
+}
 
-  image_view::~image_view() {}
+void image_view::set_tensor(const DLTensor &tensor,
+                            const visualization_mode mode) {
+  int width, height;
+  uint8_t *img_data;
 
-  void image_view::set_gaze_pts(std::vector< std::tuple<uint32_t, uint32_t> > &new_pts) {
-    std::scoped_lock fn_lock(m_gaze_pts_mutex);
-    m_gaze_pts.swap(new_pts);
-  }
-
-  static QVector<QRgb> getHotColorMap() {
-    QVector<QRgb> colorTable(256);
-    for (int i = 0; i < 255; i++) {
-      const float *color = __HOT_COLORMAP__[i];
-      colorTable[i] = qRgb(255*color[0],
-                           255*color[1], 
-                           255*color[2]);
+  clear_overlay();
+  {
+    std::scoped_lock draw_lock(m_gaze_pts_mutex);
+    for (auto coord_tuple : m_gaze_pts) {
+      auto [x, y] = coord_tuple;
+      draw_box(x, y, 25, 25);
     }
-    return colorTable;
   }
 
-  void image_view::set_tensor(const DLTensor &tensor, const visualization_mode mode) {
-    int width, height;
-    uint8_t* img_data;
-    
-    clear_overlay();
-    {
-      std::scoped_lock draw_lock(m_gaze_pts_mutex);
-      for(auto coord_tuple : m_gaze_pts) {
-        auto [x, y] = coord_tuple;
-        draw_box(x, y, 25, 25);
+  switch (mode) {
+    case VIZ_RGB:
+      // Get the data from the torch tensor
+      height = tensor.shape[1];
+      width = tensor.shape[2];
+      img_data = reinterpret_cast<uint8_t *>(tensor.data);
+      {
+        QImage image(img_data, width, height, sizeof(uint8_t) * 3 * width,
+                     QImage::Format_RGB888);
+        QPixmap pixmap = QPixmap::fromImage(image);
+        QPainter painter(&pixmap);
+        QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(pen);
+        painter.drawRects(m_rectangles_to_draw);
+
+        QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection,
+                                  Q_ARG(QPixmap, pixmap));
       }
-    }
-    
-    switch(mode) {
-      case VIZ_RGB:
-        // Get the data from the torch tensor
-        height = tensor.shape[1];
-        width = tensor.shape[2];
-        img_data = reinterpret_cast<uint8_t *>(tensor.data);
-        {
-          QImage image(img_data, width, height, sizeof(uint8_t)*3*width, QImage::Format_RGB888);
-          QPixmap pixmap = QPixmap::fromImage(image);
-          QPainter painter(&pixmap);
-          QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-          painter.setRenderHint(QPainter::Antialiasing, true);
-          painter.setPen(pen);
-          painter.drawRects(m_rectangles_to_draw);
+      break;
 
-          QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
-        }
-        break;
+    case VIZ_HEATMAP:
+      height = tensor.shape[1];
+      width = tensor.shape[2];
+      img_data = reinterpret_cast<uint8_t *>(tensor.data);
+      {
+        // Extract it to a Qt data structure
+        QImage greyscale(img_data, width, height, sizeof(unsigned char) * width,
+                         QImage::Format_Grayscale8);
 
-      case VIZ_HEATMAP:
-        height = tensor.shape[1];
-        width = tensor.shape[2];
-        img_data = reinterpret_cast<uint8_t *>(tensor.data);
-        {   
-          // Extract it to a Qt data structure
-          QImage greyscale(img_data, width, height, sizeof(unsigned char)*width, QImage::Format_Grayscale8);
+        // apply the heatmap
+        QImage indexed_image =
+            greyscale.convertToFormat(QImage::Format_Indexed8);
+        indexed_image.setColorTable(getHotColorMap());
+        indexed_image = indexed_image.convertToFormat(QImage::Format_RGB30);
 
-          // apply the heatmap
-          QImage indexed_image = greyscale.convertToFormat(QImage::Format_Indexed8);
-          indexed_image.setColorTable(getHotColorMap());
-          indexed_image = indexed_image.convertToFormat(QImage::Format_RGB30);
+        QPixmap pixmap = QPixmap::fromImage(indexed_image);
+        QPainter painter(&pixmap);
+        QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(pen);
+        painter.drawRects(m_rectangles_to_draw);
 
-          QPixmap pixmap = QPixmap::fromImage(indexed_image);
-          QPainter painter(&pixmap);
-          QPen pen(Qt::blue, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-          painter.setRenderHint(QPainter::Antialiasing, true);
-          painter.setPen(pen);
-          painter.drawRects(m_rectangles_to_draw);
-
-          QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection, Q_ARG(QPixmap, pixmap));
-        }
-      default:
-        break;
-    }
-  }
-
-  void image_view::draw_box(int x, int y, int width, int height) {
-    m_rectangles_to_draw.push_back(QRect(x, y, width, height));
-  }
-
-  void image_view::clear_overlay() {
-    m_rectangles_to_draw.clear();
+        QMetaObject::invokeMethod(this, "setPixmap", Qt::QueuedConnection,
+                                  Q_ARG(QPixmap, pixmap));
+      }
+    default:
+      break;
   }
 }
+
+void image_view::draw_box(int x, int y, int width, int height) {
+  m_rectangles_to_draw.push_back(QRect(x, y, width, height));
+}
+
+void image_view::clear_overlay() { m_rectangles_to_draw.clear(); }
+}  // namespace vin

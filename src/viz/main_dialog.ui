@@ -24,7 +24,7 @@
        <widget class="QTreeWidget" name="current_dag">
         <column>
          <property name="text">
-          <string notr="true">1</string>
+          <string notr="true">DAG Tree</string>
          </property>
         </column>
        </widget>
