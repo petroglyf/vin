@@ -1,6 +1,6 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: Build for ARM and x86 processors 
+name: Ubuntu Build
 
 on:
   push:
@@ -23,24 +23,22 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest]
-        build_type: [Release]
+        os: [ubuntu-24.04]
+        build_type: [release]
         c_compiler: [gcc, cl, aarch64-linux-gnu-gcc]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             c_compiler: gcc
             cpp_compiler: g++
             is_arm: false
-          - os: ubuntu-latest
-            c_compiler: aarch64-linux-gnu-gcc
-            cpp_compiler: aarch64-linux-gnu-g++
-            is_arm: true
+          # - os: ubuntu-latest
+          #   c_compiler: aarch64-linux-gnu-gcc
+          #   cpp_compiler: aarch64-linux-gnu-g++
+          #   is_arm: true
         exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
+            c_compiler: aarch64-linux-gnu-gcc
+          - os: ubuntu-24.04
             c_compiler: cl
 
     steps:
@@ -52,14 +50,15 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "build-output-install-dir=${{ github.workspace }}/build/install" >> "$GITHUB_OUTPUT"
 
     - name: Add the Petroglyph PPA
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: petroglyph-ppa
       shell: bash
       run: |
-        curl -s --compressed "https://petrogly-ph.github.io/ppa/KEY.gpg" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ppa.gpg >/dev/null
-        sudo curl -s --compressed -o /etc/apt/sources.list.d/pg-packages.list "https://petrogly-ph.github.io/ppa/packages.list"
+        curl -s --compressed "https://raw.githubusercontent.com/petroglyf/ppa/refs/heads/master/KEY.gpg" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ppa.gpg >/dev/null
+        sudo curl -s --compressed -o /etc/apt/sources.list.d/pg-packages.list "https://raw.githubusercontent.com/petroglyf/ppa/refs/heads/master/packages.list"
 
     - name: Install dependencies if ARM64
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -67,52 +66,51 @@ jobs:
       shell: bash
       run: |
         ! ${{ matrix.is_arm }} && echo "Is x86, skipping" && exit;
-        sudo dpkg --add-architecture arm64
-        
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy main restricted" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-updates main restricted" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy universe" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-updates universe" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy multiverse" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-updates multiverse" >> source-mod.list
-        sudo echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-backports main restricted universe multiverse" >> source-mod.list
-        sudo mv source-mod.list /etc/apt/sources.list.d/arm-cross-compile-sources.list
 
-        sudo sed -i 's/deb /deb [arch=amd64] /g' /etc/apt/sources.list
-        sudo sed -i 's/deb \[/deb \[arch=amd64, /g' /etc/apt/sources.list.d/pg-packages.list
-        
+        sudo echo "# ARM64 support" >> source-mod.list
+        sudo echo "Types: deb" >> source-mod.list
+        sudo echo "URIs: http://ports.ubuntu.com/ubuntu-ports/" >> source-mod.list
+        sudo echo "Suites: noble noble-updates noble-backports" >> source-mod.list
+        sudo echo "Components: main universe restricted multiverse" >> source-mod.list
+        sudo echo "Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg" >> source-mod.list
+        sudo echo "Architectures: arm64" >> source-mod.list
+        sudo echo "" >> source-mod.list
+        sudo cat source-mod.list
+        sudo mv source-mod.list /etc/apt/sources.list.d/arm-cross-compile.sources
+
+        sudo dpkg --add-architecture arm64
         sudo apt update
-        sudo apt-get install -y pkg-config catch2 libjsoncpp-dev:arm64 qt6-multimedia-dev:arm64 qt6-base-dev:arm64 functional-dag:arm64 libgl1-mesa-dev:arm64
-        sudo apt-get install -y gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu g++-aarch64-linux-gnu
+        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev:arm64 qt6-base-dev:arm64 functional-dag:arm64=1.0rc1 libgl1-mesa-dev:arm64 libflatbuffers-dev:arm64
+        sudo apt-get install -y gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu g++-aarch64-linux-gnu meson
     - name: Install dependencies if x86-64
       run: |
         ${{ matrix.is_arm }} && echo "Is ARM, skipping" && exit; 
         sudo apt update
-        sudo apt-get install -y pkg-config catch2 libjsoncpp-dev qt6-multimedia-dev qt6-base-dev functional-dag libgl1-mesa-dev
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev qt6-base-dev libgl1-mesa-dev meson libflatbuffers-dev
+        sudo apt-get install -y functional-dag=1.0rc1
+    - name: Configure Meson
+      # Configure Meson in a 'build' subdirectory. 
       run: |
         export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
-        ${{ matrix.is_arm }} && cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DARCHITECTURE_ID='arm64' -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }};
-        ! ${{ matrix.is_arm }} && cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DARCHITECTURE_ID='amd64' -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }};
+        ${{ matrix.is_arm }} && meson --buildtype=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }} ${{ github.workspace }} -DARCH_ID='arm64';
+        ! ${{ matrix.is_arm }} && meson --buildtype=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }} ${{ github.workspace }} -DARCH_ID='amd64';
         echo "Completed Configuration"
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: meson compile -C ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: meson test -C ${{ steps.strings.outputs.build-output-dir }}
+
 
     - name: Package result 
       id: pack
       shell: bash
       run: |
-        cd build && cpack -G DEB
+        meson install -C ${{ steps.strings.outputs.build-output-dir }} --destdir ${{ steps.strings.outputs.build-output-install-dir }};
+        meson compile -C ${{ steps.strings.outputs.build-output-dir }} debpackage
         echo "Complete"
 
     - uses: actions/upload-artifact@v4
@@ -124,7 +122,7 @@ jobs:
     
         # A file, directory or wildcard pattern that describes what to upload
         # Required.
-        path: 'build/package/*.deb'
+        path: 'build/*.deb'
     
         # The desired behavior if no files are found using the provided path.
         # Available Options:

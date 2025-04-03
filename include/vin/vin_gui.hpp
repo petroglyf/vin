@@ -1,49 +1,44 @@
 #pragma once
 /**
- *           _________ _       
+ *           _________ _
  *  |\     /|\__   __/( (    /|
  *  | )   ( |   ) (   |  \  ( |
  *  ( (   ) )   | |   | (\ \) |
  *   \ \_/ /    | |   | | \   |
  *    \   /  ___) (___| )  \  |
  *     \_/   \_______/|/    )_)
- *                             
+ *
  * Main window header
- * 
+ *
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
- */ 
+ */
 
-#include "ui_main_dialog.h"
+#include <functional_dag/libutils.h>
+
 #include <QListWidget>
 
-#include "vin/utils/vin_library.hpp"
-#include "vin/utils/lib_specification.hpp"
-#include "vin/vin_dag_manager.hpp"
-
-void populate_lib_list(QListWidget *list, vin::vin_library *library);
+#include "ui_main_dialog.h"
 
 namespace vin {
 
-  class main_window : public QMainWindow {
-  public:
-    Ui::main_win main_ui_window;
-    QListWidget *list;
+class main_window : public QMainWindow {
+ public:
+  Ui::main_win main_ui_window;
+  QListWidget *list;
 
-    main_window(vin_library *_library, fn_dag::dag_manager<std::string>* const _fn_manager);
-    ~main_window();
+  main_window(fn_dag::library *_library);
+  ~main_window();
 
-  private:  
-    const fn_dag::lib_options *m_curr_spec_handle;
-    shared_ptr<lib_specification> m_curr_lib_spec;
-    vin::vin_dag m_dag;
-    std::string m_node_name;
-    std::string m_parent_node_name;
+ private:
+  const fn_dag::node_prop_spec *m_curr_lib_spec;
+  std::string m_node_name;
+  std::string m_parent_node_name;
 
-    void refresh_options_panel(QListWidgetItem *value );
-    void handle_create();
-    void populate_options_panel(QListWidgetItem *value, QScrollArea *scroll_area);
-    void save();
-    void load();
-  };
-}
+  void refresh_options_panel(QListWidgetItem *value);
+  void handle_create();
+  void populate_options_panel(QListWidgetItem *value, QScrollArea *scroll_area);
+  void save();
+  void load();
+};
+}  // namespace vin
