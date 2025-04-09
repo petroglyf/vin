@@ -15,6 +15,7 @@
  * @license: MIT License
  */
 
+#include <functional_dag/libutils.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -23,18 +24,18 @@
 #include <QtWidgets/QApplication>
 #include <filesystem>
 #include <fstream>
+#include <functional_dag/filter_sys.hpp>
 #include <future>
 #include <iostream>
 #include <sstream>
 #include <thread>
 #include <vector>
 
-#include "functional_dag/filter_sys.hpp"
-#include "functional_dag/libutils.h"
-#include "vin/error_codes.hpp"
 #ifndef CLI_ONLY
+#include "vin/vin_dag_manager.hpp"
 #include "vin/vin_gui.hpp"
 #endif
+#include "vin/error_codes.h"
 
 #define XSTR(x) STR(x)
 #define STR(x) #x
@@ -65,13 +66,13 @@ int initialize_library(fn_dag::library &dag_library) {
     std::cout << std::endl;
   }
 
-  if (available_directories.size() == 0) return ERR_LIBRARY_EMPTY;
+  if (available_directories.size() == 0) return vin::error_codes::LIBRARY_EMPTY;
   std::cout << "\nLoading library of modules.. !\n\t          "
                "<library-name>:<guid>\n";
 
   dag_library.load_all_available_libs(available_directories);
 
-  return ERR_NO_ERROR;
+  return vin::error_codes::NO_ERROR;
 }
 
 int main(int argc, char *argv[]) {
@@ -110,8 +111,12 @@ int main(int argc, char *argv[]) {
   const QStringList args = parser.positionalArguments();
   bool has_file_specd = parser.isSet(loadDagOption);
 
-  // Construct the library
+// Construct the library
+#ifdef CLI_ONLY
   fn_dag::library dag_library;
+#else
+  vin::vin_dag_manager dag_library;
+#endif
   std::cout << "Constructing module library...\n";
   initialize_library(dag_library);
 
@@ -127,7 +132,7 @@ int main(int argc, char *argv[]) {
     std::ifstream file_stream(json_file);
     if (!file_stream.is_open()) {
       std::cerr << "Error: Unable to open file " << json_file << std::endl;
-      return ERR_FILE_NOT_FOUND;
+      return vin::error_codes::FILE_NOT_FOUND;
     }
     std::stringstream buffer;
     buffer << file_stream.rdbuf();
@@ -148,12 +153,12 @@ int main(int argc, char *argv[]) {
       } else {
         std::cerr << "Error: Unable to deserialize the compute dag due to: "
                   << reified_dag.error() << std::endl;
-        return INVALID_JSON_FORMAT;
+        return vin::error_codes::INVALID_JSON_FORMAT;
       }
       do {
         std::this_thread::sleep_for(300ms);
       } while (!SHOULD_QUIT);
-      return 0;
+      return vin::error_codes::NO_ERROR;
     });
 
     auto status = run_thread.wait_for(6s);
@@ -161,17 +166,11 @@ int main(int argc, char *argv[]) {
       app.exec();
       run_thread.wait();
     }
-
-    if (fn_manager != nullptr) {
-      fn_manager->stahp();
-      delete fn_manager;
-      fn_manager = nullptr;
-    }
   }
 #ifndef CLI_ONLY
   else {
     fn_manager = new fn_dag::dag_manager<std::string>();
-    vin::main_window main_window(&dag_library);
+    vin::main_window main_window(&dag_library, fn_manager);
     main_window.show();
 
     app.exec();

@@ -300,10 +300,10 @@ static QVector<QRgb> getHotColorMap() {
   return colorTable;
 }
 
-void image_view::set_tensor(const DLTensor &tensor,
+void image_view::set_tensor(const arrow::Tensor &tensor,
                             const visualization_mode mode) {
   int width, height;
-  uint8_t *img_data;
+  const uint8_t *img_data;
 
   clear_overlay();
   {
@@ -317,9 +317,9 @@ void image_view::set_tensor(const DLTensor &tensor,
   switch (mode) {
     case VIZ_RGB:
       // Get the data from the torch tensor
-      height = tensor.shape[1];
-      width = tensor.shape[2];
-      img_data = reinterpret_cast<uint8_t *>(tensor.data);
+      height = tensor.shape()[1];
+      width = tensor.shape()[2];
+      img_data = tensor.raw_data();
       {
         QImage image(img_data, width, height, sizeof(uint8_t) * 3 * width,
                      QImage::Format_RGB888);
@@ -336,9 +336,9 @@ void image_view::set_tensor(const DLTensor &tensor,
       break;
 
     case VIZ_HEATMAP:
-      height = tensor.shape[1];
-      width = tensor.shape[2];
-      img_data = reinterpret_cast<uint8_t *>(tensor.data);
+      height = tensor.shape()[1];
+      width = tensor.shape()[2];
+      img_data = tensor.raw_data();
       {
         // Extract it to a Qt data structure
         QImage greyscale(img_data, width, height, sizeof(unsigned char) * width,

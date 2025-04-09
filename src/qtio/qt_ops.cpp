@@ -1,4 +1,8 @@
-#include <dlpack.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <arrow/api.h>
+#pragma GCC diagnostic pop
+
 #include <stdio.h>
 
 #include <QImage>
@@ -16,7 +20,7 @@ const static fn_dag::GUID<fn_dag::node_prop_spec> __qt_op_guid =
     *fn_dag::GUID<fn_dag::node_prop_spec>::from_uuid(
         "1133483f-06b8-41e3-9a72-098cb4cd71b4");
 
-class qt_op : public fn_dag::dag_node<DLTensor, DLTensor> {
+class qt_op : public fn_dag::dag_node<arrow::Tensor, arrow::Tensor> {
  private:
   OP op_code;
   uint32_t m_width;
@@ -28,9 +32,9 @@ class qt_op : public fn_dag::dag_node<DLTensor, DLTensor> {
 
   ~qt_op() {}
 
-  std::unique_ptr<DLTensor> update(const DLTensor *input_dltensor_) {
-    QImage input_image((uchar *)input_dltensor_->data,
-                       input_dltensor_->shape[2], input_dltensor_->shape[1],
+  std::unique_ptr<arrow::Tensor> update(const arrow::Tensor *input_tensor_) {
+    QImage input_image(input_tensor_->data()->mutable_data(),
+                       input_tensor_->shape()[2], input_tensor_->shape()[1],
                        QImage::Format_RGB888);
     QImage output_image;
     switch (op_code) {
@@ -46,17 +50,12 @@ class qt_op : public fn_dag::dag_node<DLTensor, DLTensor> {
     }
 
     uint8_t *bits = output_image.bits();
-    std::unique_ptr<DLTensor> output_tensor(new DLTensor);
-    output_tensor->device.device_type = DLDeviceType::kDLCPU;
-    output_tensor->ndim = 3;
-    output_tensor->shape = new int64_t[]{3, m_height, m_width};
-    output_tensor->strides = NULL;
-    output_tensor->byte_offset = 0;
-    output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
-    output_tensor->dtype.bits = 8;
-    output_tensor->dtype.lanes = 3;
-    output_tensor->data = new uint8_t[m_width * m_height * 3];
-    memcpy(output_tensor->data, bits, m_width * m_height * 3 * sizeof(uint8_t));
+
+    auto buffer = std::make_shared<arrow::Buffer>(bits, m_width * m_height * 3);
+    std::vector<int64_t> shape = {3, m_height, m_width};
+    auto output_tensor =
+        std::make_unique<arrow::Tensor>(arrow::uint8(), buffer, shape);
+
     return output_tensor;
   }
 };

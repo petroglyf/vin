@@ -16,7 +16,11 @@
 #include <QtWidgets/QLabel>
 #include <mutex>
 
-#include "dlpack.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <arrow/api.h>
+#pragma GCC diagnostic pop
+
 #include "functional_dag/dag_interface.hpp"
 
 typedef std::tuple<uint32_t, uint32_t> xy_pt;
@@ -72,7 +76,7 @@ class image_view : public QLabel {
    * @param tensor The image to display
    * @param mode How to display it
    */
-  void set_tensor(const DLTensor &tensor, const visualization_mode mode);
+  void set_tensor(const arrow::Tensor &tensor, const visualization_mode mode);
 
   /** A function to draw boxes where the cameras will center themselves.
    *
@@ -95,12 +99,12 @@ class image_view : public QLabel {
   void clear_overlay();
 };
 
-class QtViewer : public fn_dag::dag_node<DLTensor, DLTensor> {
+class QtViewer : public fn_dag::dag_node<arrow::Tensor, int> {
  public:
   QtViewer();
 
   void start();
-  std::unique_ptr<DLTensor> update(const DLTensor *image);
+  std::unique_ptr<int> update(const arrow::Tensor *image);
 
  private:
   QFrame *frame;

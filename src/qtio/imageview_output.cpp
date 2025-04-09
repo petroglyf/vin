@@ -1,8 +1,8 @@
 #include <QCoreApplication>
 #include <QHBoxLayout>
+#include <cstdint>
 #include <iostream>
 
-#include "dlpack.h"
 #include "qtio/image_view.hpp"
 
 using namespace vin;
@@ -24,11 +24,11 @@ void QtViewer::start() {
   frame->show();
 }
 
-std::unique_ptr<DLTensor> QtViewer::update(const DLTensor *image) {
+std::unique_ptr<int> QtViewer::update(const arrow::Tensor *image) {
   if (imagePanel == nullptr) return nullptr;
 
-  if (image != nullptr && image->ndim == 3) {
-    switch (image->shape[0]) {
+  if (image != nullptr && image->shape().size() == 3) {
+    switch (image->shape()[0]) {
       case 1:
         imagePanel->set_tensor(*image, visualization_mode::VIZ_HEATMAP);
         break;
@@ -37,29 +37,35 @@ std::unique_ptr<DLTensor> QtViewer::update(const DLTensor *image) {
         break;
       default:
         std::cerr << "Unable to visualize image with n_channels: "
-                  << image->shape[0] << std::endl;
+                  << image->shape()[0] << std::endl;
     }
-  } else if (image != nullptr && image->ndim == 2 &&
-             image->dtype.code == DLDataTypeCode::kDLUInt) {
-    if (image->shape[1] == 2) {
+  } else if (image != nullptr && image->shape().size() == 2 &&
+             image->type_id() == arrow::Type::UINT32) {
+    std::vector<int64_t> f{0, 0};
+    if (image->shape()[1] == 2) {
       std::vector<std::tuple<uint32_t, uint32_t> > goal_points;
-      for (auto i = 0; i < image->shape[0]; i++) {
-        uint32_t x = reinterpret_cast<uint32_t *>(image->data)[i * 2];
-        uint32_t y = reinterpret_cast<uint32_t *>(image->data)[i * 2 + 1];
+      for (auto i = 0; i < image->shape()[0]; i++) {
+        f[0] = i;
+        f[1] = 0;
+        uint32_t x = image->Value<arrow::UInt32Type>(f);
+        f[1] = 1;
+        uint32_t y = image->Value<arrow::UInt32Type>(f);
         goal_points.push_back(std::make_tuple(x, y));
       }
       imagePanel->set_gaze_pts(goal_points);
     } else {
       // Each row is a bounding box
-      int64_t stride = image->strides[0];
-      int32_t *data_ptr = reinterpret_cast<int32_t *>(image->data);
-
       imagePanel->clear_overlay();
-      for (int64_t row = 0; row < image->shape[0]; row++) {
-        int x = data_ptr[row * stride];
-        int y = data_ptr[row * stride + 1];
-        int width = data_ptr[row * stride + 2];
-        int height = data_ptr[row * stride + 3];
+      for (int64_t row = 0; row < image->shape()[0]; row++) {
+        f[0] = row;
+        f[1] = 0;
+        int x = image->Value<arrow::UInt32Type>(f);
+        f[1] = 1;
+        int y = image->Value<arrow::UInt32Type>(f);
+        f[1] = 2;
+        int width = image->Value<arrow::UInt32Type>(f);
+        f[1] = 3;
+        int height = image->Value<arrow::UInt32Type>(f);
         imagePanel->draw_box(x, y, width, height);
       }
     }

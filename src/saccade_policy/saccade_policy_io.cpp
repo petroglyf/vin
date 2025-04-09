@@ -1,3 +1,8 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <arrow/api.h>
+#pragma GCC diagnostic pop
+
 #include <stdlib.h>
 #include <time.h>
 
@@ -7,14 +12,13 @@
 #include <iostream>
 #include <memory>
 
-#include "dlpack.h"
 #include "functional_dag/libutils.h"
 
 const static fn_dag::GUID<fn_dag::node_prop_spec> __saccade_guid =
     *fn_dag::GUID<fn_dag::node_prop_spec>::from_uuid(
         "30c66408-f2f7-459c-abdd-d0b5f8d1e052");
 
-uint64_t gradient_next_state(uint64_t prev_state, const DLTensor *heatmap);
+uint64_t gradient_next_state(uint64_t prev_state, const arrow::Tensor *heatmap);
 
 enum policy_type { UNDEFINED, CONSTANT, RANDOM, SALIENCY };
 
@@ -29,7 +33,7 @@ int sgn(T val) {
   return (T(0) < val) - (val < T(0));
 }
 
-class saccade_op : public fn_dag::dag_node<DLTensor, DLTensor> {
+class saccade_op : public fn_dag::dag_node<arrow::Tensor, arrow::Tensor> {
  public:
   saccade_op(policy_type _op_code, const uint8_t _n_points)
       : m_op_code(_op_code), m_npts(_n_points), m_is_initialized(false) {
@@ -47,22 +51,13 @@ class saccade_op : public fn_dag::dag_node<DLTensor, DLTensor> {
     delete[] prev_points;
   }
 
-  std::unique_ptr<DLTensor> update(const DLTensor *_input_dltensor) {
-    const uint32_t max_y = _input_dltensor->shape[1];
-    const uint32_t max_x = _input_dltensor->shape[2];
+  std::unique_ptr<arrow::Tensor> update(const arrow::Tensor *_input_tensor) {
+    const uint32_t max_y = _input_tensor->shape()[1];
+    const uint32_t max_x = _input_tensor->shape()[2];
 
-    uint32_t *coords_out = nullptr;
-    std::unique_ptr<DLTensor> output_tensor(new DLTensor);
-
-    output_tensor->device.device_type = DLDeviceType::kDLCPU;
-    output_tensor->ndim = 2;
-    output_tensor->shape = new int64_t[]{m_npts, 2};
-    output_tensor->strides = NULL;
-    output_tensor->byte_offset = 0;
-    output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
-    output_tensor->dtype.bits = 8;
-    output_tensor->dtype.lanes = 2;
-    output_tensor->data = coords_out = new uint32_t[m_npts * 2];
+    auto local_buffer = arrow::Buffer::Wrap(prev_points, 2 * m_npts);
+    auto output_tensor = std::make_unique<arrow::Tensor>(
+        arrow::uint32(), local_buffer, std::vector<int64_t>(m_npts, 2));
 
     // Update the goals
     if (!m_is_initialized) {
@@ -93,8 +88,7 @@ class saccade_op : public fn_dag::dag_node<DLTensor, DLTensor> {
           uint64_t prev_state =
               ((uint64_t)prev_points[i * 2] << 32) + prev_points[i * 2 + 1];
 
-          uint64_t next_state =
-              gradient_next_state(prev_state, _input_dltensor);
+          uint64_t next_state = gradient_next_state(prev_state, _input_tensor);
 
           prev_gpoints[i * 2] = next_state >> 32;
           prev_gpoints[i * 2 + 1] = (next_state << 32) >> 32;
@@ -116,8 +110,6 @@ class saccade_op : public fn_dag::dag_node<DLTensor, DLTensor> {
       prev_points[i * 2 + 1] +=
           get_delt(prev_points[i * 2 + 1], prev_gpoints[i * 2 + 1]);
     }
-
-    memcpy(coords_out, prev_points, sizeof(uint32_t) * 2 * m_npts);
 
     return output_tensor;
   }

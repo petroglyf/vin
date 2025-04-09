@@ -2,11 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>This app requires microphone acess to record your greeting.</string>
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>UIUserInterfaceStyle</key>
+    <string>Dark</string>
     <key>NSCameraUsageDescription</key>
-    <string>This app requires camera access to capture your dog photos.</string>
+    <string>This app requires camera access for robot perception.</string>
+    <key>NSCameraUseContinuityCameraDeviceType</key>
+    <string>This app requires camera access for robot perception.</string>
   </dict>
 </plist>

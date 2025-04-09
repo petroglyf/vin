@@ -1,11 +1,9 @@
-#include <stdio.h>
 
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QThread>
 #include <QVideoFrame>
 #include <iostream>
-#include <memory>
 
 #include "qtio/qt_io.hpp"
 
@@ -17,7 +15,8 @@ qt_video_player::qt_video_player(std::string uri, int32_t width, int32_t height)
       m_surface_for_player(nullptr),
       m_width(width),
       m_height(height),
-      m_mutex{} {
+      m_mutex{},
+      m_frame_queue{} {
   start();
 }
 
@@ -54,24 +53,15 @@ void qt_video_player::frame_changed(const QVideoFrame &frame) {
 
   int64_t height = image.height();
   int64_t width = image.width();
-  uint8_t rgb = 3;
 
   QImage image2 = image.convertToFormat(QImage::Format_RGB888);
   uint8_t *bits = image2.bits();
 
-  DLTensor *output_tensor = new DLTensor;
-  output_tensor->device.device_type = DLDeviceType::kDLCPU;
-  output_tensor->ndim = 3;
-  output_tensor->shape = new int64_t[]{rgb, height, width};
-  output_tensor->strides = NULL;
-  output_tensor->byte_offset = 0;
-  output_tensor->dtype.code = DLDataTypeCode::kDLUInt;
-  output_tensor->dtype.bits = 8;
-  output_tensor->dtype.lanes = 3;
-  output_tensor->data = new uint8_t[width * height * rgb];
-  memcpy(output_tensor->data, bits, width * height * rgb * sizeof(uint8_t));
+  auto buffer = std::make_shared<arrow::Buffer>(bits, width * height * 3);
+  std::vector<int64_t> shape = {3, height, width};
 
-  m_frame_queue.push(output_tensor);
+  m_frame_queue.push(
+      std::make_unique<arrow::Tensor>(arrow::uint8(), buffer, shape));
   m_condition.notify_one();
 }
 
@@ -142,14 +132,15 @@ qt_video_player::~qt_video_player() {
   }
 }
 
-std::unique_ptr<DLTensor> qt_video_player::update() {
+std::unique_ptr<arrow::Tensor> qt_video_player::update() {
   std::unique_lock<std::mutex> lock(m_mutex);
 
   while (m_frame_queue.empty()) {
     // release lock as long as the wait and reaquire it afterwards.
     m_condition.wait(lock);
   }
-  std::unique_ptr<DLTensor> val(m_frame_queue.front());
+  std::unique_ptr<arrow::Tensor> val;
+  val = std::move(m_frame_queue.front());
   m_frame_queue.pop();
 
   return val;
