@@ -1,7 +1,9 @@
-#include "functional_dag/guid_generated.h"
-#include "functional_dag/guid_impl.hpp"
-#include "functional_dag/lib_spec_generated.h"
-#include "functional_dag/libutils.h"
+#include <functional_dag/guid_generated.h>
+#include <functional_dag/lib_spec_generated.h>
+#include <functional_dag/libutils.h>
+#include <glog/logging.h>
+
+#include <functional_dag/guid_impl.hpp>
 #ifndef CLI_ONLY
 #include "qtio/image_view.hpp"
 #endif
@@ -127,12 +129,12 @@ extern "C" DL_EXPORT bool construct_node(
         return parent_node_name == *parent_ret;
       } else {
         delete new_filter;
-        std::cout << "Error: Could not add node to the dag. Error code: "
-                  << parent_ret.error() << std::endl;
+        LOG(ERROR) << "Error: Could not add node to the dag. Error code: "
+                   << parent_ret.error() << std::endl;
       }
     } else {
-      std::cout << "Error: No parent node name found for in options for "
-                << name << std::endl;
+      LOG(ERROR) << "Error: No parent node name found for in options for "
+                 << name << std::endl;
     }
   }
 #endif

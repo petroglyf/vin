@@ -2,7 +2,8 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <arrow/api.h>
 #pragma GCC diagnostic pop
-
+#include <functional_dag/libutils.h>
+#include <glog/logging.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -11,8 +12,6 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
-
-#include "functional_dag/libutils.h"
 
 const static fn_dag::GUID<fn_dag::node_prop_spec> __saccade_guid =
     *fn_dag::GUID<fn_dag::node_prop_spec>::from_uuid(
@@ -95,7 +94,7 @@ class saccade_op : public fn_dag::dag_node<arrow::Tensor, arrow::Tensor> {
         }
         break;
       default:
-        std::cout << "skipping, defaulting to constant\n";
+        LOG(WARNING) << "skipping, defaulting to constant\n";
         return nullptr;
     }
 
@@ -198,12 +197,12 @@ extern "C" DL_EXPORT bool construct_node(
         return parent_node_name == *parent_ret;
       } else {
         delete new_filter;
-        std::cout << "Error: Could not add node to the dag. Error code: "
-                  << parent_ret.error() << std::endl;
+        LOG(ERROR) << "Error: Could not add node to the dag. Error code: "
+                   << parent_ret.error() << std::endl;
       }
     } else {
-      std::cout << "Error: No parent node name found for in options for "
-                << name << std::endl;
+      LOG(ERROR) << "Error: No parent node name found for in options for "
+                 << name << std::endl;
     }
   }
   return false;

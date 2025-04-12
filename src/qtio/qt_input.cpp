@@ -1,4 +1,6 @@
 
+#include <glog/logging.h>
+
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QThread>
@@ -21,20 +23,20 @@ qt_video_player::qt_video_player(std::string uri, int32_t width, int32_t height)
 }
 
 void stateChanged(QMediaPlayer::PlaybackState newState) {
-  std::cout << "Playback state changed: " << newState << std::endl;
+  LOG(INFO) << "Playback state changed: " << newState << std::endl;
 }
 
 void playerErrorOccurred(QMediaPlayer::Error error,
                          const QString &errorString) {
   if (error != QMediaPlayer::Error::NoError) {
-    std::cout << "ERROR: " << errorString.toStdString() << std::endl;
+    LOG(ERROR) << "ERROR: " << errorString.toStdString() << std::endl;
   }
 }
 
 void cameraErrorOccurred(QCamera::Error error)  ///, const QString &errorString)
 {
   if (error != QCamera::Error::NoError) {
-    std::cout << "ERROR: " << std::endl;
+    LOG(ERROR) << "ERROR: " << std::endl;
   }
 }
 
@@ -66,7 +68,7 @@ void qt_video_player::frame_changed(const QVideoFrame &frame) {
 }
 
 void mediaStatusChanged(QMediaPlayer::MediaStatus status) {
-  std::cout << "Media status changed: " << status << std::endl;
+  LOG(INFO) << "Media status changed: " << status << std::endl;
 }
 
 void qt_video_player::run() {

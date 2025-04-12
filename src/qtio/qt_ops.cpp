@@ -2,18 +2,17 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <arrow/api.h>
 #pragma GCC diagnostic pop
-
+#include <functional_dag/guid_generated.h>
+#include <functional_dag/lib_spec_generated.h>
+#include <functional_dag/libutils.h>
+#include <glog/logging.h>
 #include <stdio.h>
 
 #include <QImage>
+#include <functional_dag/dag_interface.hpp>
+#include <functional_dag/guid_impl.hpp>
 #include <iostream>
 #include <memory>
-
-#include "functional_dag/dag_interface.hpp"
-#include "functional_dag/guid_generated.h"
-#include "functional_dag/guid_impl.hpp"
-#include "functional_dag/lib_spec_generated.h"
-#include "functional_dag/libutils.h"
 
 typedef enum { UNDEFINED, RESIZE } OP;
 const static fn_dag::GUID<fn_dag::node_prop_spec> __qt_op_guid =
@@ -142,12 +141,12 @@ extern "C" DL_EXPORT bool construct_node(
         return parent_node_name == *parent_ret;
       } else {
         delete new_filter;
-        std::cout << "Error: Could not add node to the dag. Error code: "
-                  << parent_ret.error() << std::endl;
+        LOG(ERROR) << "Error: Could not add node to the dag. Error code: "
+                   << parent_ret.error() << std::endl;
       }
     } else {
-      std::cout << "Error: No parent node name found for in options for "
-                << name << std::endl;
+      LOG(ERROR) << "Error: No parent node name found for in options for "
+                 << name << std::endl;
     }
   }
   return false;
