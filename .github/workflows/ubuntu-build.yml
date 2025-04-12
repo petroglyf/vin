@@ -59,7 +59,14 @@ jobs:
       run: |
         curl -s --compressed "https://raw.githubusercontent.com/petroglyf/ppa/refs/heads/master/KEY.gpg" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/ppa.gpg >/dev/null
         sudo curl -s --compressed -o /etc/apt/sources.list.d/pg-packages.list "https://raw.githubusercontent.com/petroglyf/ppa/refs/heads/master/packages.list"
-
+    - name: Add Apache Arrow PPA
+      # Adds apache arrow to the aptitude repos
+      id: arrow-ppa
+      shell: bash
+      run: |
+        sudo apt install -y -V ca-certificates lsb-release wget
+        wget https://repo1.maven.org/maven2/org/apache/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
+        sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
     - name: Install dependencies if ARM64
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: deps-arm
@@ -80,13 +87,13 @@ jobs:
 
         sudo dpkg --add-architecture arm64
         sudo apt update
-        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev:arm64 qt6-base-dev:arm64 functional-dag:arm64=1.0rc1 libgl1-mesa-dev:arm64 libflatbuffers-dev:arm64
+        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev:arm64 qt6-base-dev:arm64 functional-dag:arm64=1.0rc1 libgl1-mesa-dev:arm64 libflatbuffers-dev:arm64 libarrow-dev:arm64
         sudo apt-get install -y gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu g++-aarch64-linux-gnu meson
     - name: Install dependencies if x86-64
       run: |
         ${{ matrix.is_arm }} && echo "Is ARM, skipping" && exit; 
         sudo apt update
-        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev qt6-base-dev libgl1-mesa-dev meson libflatbuffers-dev
+        sudo apt-get install -y pkg-config catch2 qt6-multimedia-dev qt6-base-dev libgl1-mesa-dev meson libflatbuffers-dev libarrow-dev
         sudo apt-get install -y functional-dag=1.0rc1
     - name: Configure Meson
       # Configure Meson in a 'build' subdirectory. 

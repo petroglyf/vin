@@ -1,0 +1,18 @@
+// IDL file for error codes.
+namespace vin;
+
+/// Error codes used by the functional dag
+enum error_codes : uint16 {
+  NO_ERROR=0,
+  ///< No error, successful function call.
+  FILE_NOT_FOUND,
+  ///< The file requested was not found.
+  NAME_ALREADY_EXISTS,
+  ///< The name of the node already exists in the DAG.
+  PARENT_ABSENT,
+  ///< The parent that the child must attach to is missing.
+  LIBRARY_EMPTY,
+  ///< Vin could not find any modules in the lib locations.
+  INVALID_JSON_FORMAT,
+  ///< Vin could not deserialize the JSON file.
+}

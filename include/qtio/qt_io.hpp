@@ -13,7 +13,10 @@
  * @author: ndepalma@alum.mit.edu
  * @license: MIT License
  */
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <arrow/api.h>
+#pragma GCC diagnostic pop
 #include <QBuffer>
 #include <QCamera>
 #include <QMediaCaptureSession>
@@ -23,15 +26,12 @@
 #include <QVideoSink>
 #include <QtWidgets/QLabel>
 #include <functional_dag/dag_interface.hpp>
-#include <memory>
 #include <mutex>
 #include <queue>
-
-#include "dlpack.h"
-
 enum qt_source { VIDEO, CAMERA };
 
-class qt_video_player : public QThread, public fn_dag::dag_source<DLTensor> {
+class qt_video_player : public QThread,
+                        public fn_dag::dag_source<arrow::Tensor> {
   Q_OBJECT
 
  public:
@@ -67,7 +67,7 @@ class qt_video_player : public QThread, public fn_dag::dag_source<DLTensor> {
    *
    * @return The qt player's QtImage converted to a DLTensor.
    */
-  std::unique_ptr<DLTensor> update() override;
+  std::unique_ptr<arrow::Tensor> update() override;
 
   /** Callback for Qt to set the next frame
    *
@@ -88,10 +88,11 @@ class qt_video_player : public QThread, public fn_dag::dag_source<DLTensor> {
   QMediaPlayer *m_player;       // Player object for Qt
   std::string m_specified_url;  // The specified URL of the video file
 
-  QVideoSink *m_surface_for_player;      // A surface for Qt to draw to
-  uint32_t m_width;                      // The output width of the image
-  uint32_t m_height;                     // The output height of the image
-  std::mutex m_mutex;                    // A mutex to get/set the atomic image
-  std::condition_variable m_condition;   // A condition variable for the mutex
-  std::queue<DLTensor *> m_frame_queue;  // A queue for the last few frames
+  QVideoSink *m_surface_for_player;     // A surface for Qt to draw to
+  uint32_t m_width;                     // The output width of the image
+  uint32_t m_height;                    // The output height of the image
+  std::mutex m_mutex;                   // A mutex to get/set the atomic image
+  std::condition_variable m_condition;  // A condition variable for the mutex
+  std::queue<std::unique_ptr<arrow::Tensor>>
+      m_frame_queue;  // A queue for the last few frames
 };
