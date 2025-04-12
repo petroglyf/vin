@@ -38,6 +38,7 @@ arrow_dep = dependency('arrow')
 catch_dep = dependency('catch2-with-main', required : false)
 fdag_dep = dependency('functional_dag', method : 'pkg-config', version : '>=1.0')
 flatbuffers_dep = dependency('flatbuffers')
+glog_dep = dependency('glog')
 qt6core_dep = dependency('qt6', modules : 'Core')
 qt6gui_dep = dependency('qt6', modules : 'Gui')
 qt6widgets_dep = dependency('qt6', modules : 'Widgets')
@@ -60,7 +61,7 @@ error_codes_h = custom_target(
 
 # Add the generated header to the include paths
 vin_bin_srcs_cli_only = ['src/vin/main.cpp', error_codes_h]
-vin_bin_deps_cli_only = [fdag_dep, qt6core_dep]
+vin_bin_deps_cli_only = [fdag_dep, qt6core_dep, glog_dep]
 
 vin_bin_srcs_full = vin_bin_srcs_cli_only + ['src/vin/vin_gui.cpp', 'src/vin/vin_dag_manager.cpp']
 vin_bin_deps_full = vin_bin_deps_cli_only + [qt6widgets_dep, qt6gui_dep]
@@ -112,7 +113,7 @@ if get_option('BUILD_QTIO')
     [sources_qtio, qtprocessed_io],
     cpp_args: ['-fPIC', '-fvisibility=hidden'],
     include_directories: ['include/'],
-    dependencies: [qt6multim_dep, qt6widgets_dep, arrow_dep],
+    dependencies: [qt6multim_dep, qt6widgets_dep, arrow_dep, glog_dep],
     install: true,
     install_dir: vin_lib_dir,
     link_args : vin_bin_linker_args,
@@ -128,7 +129,7 @@ if get_option('BUILD_QTOP')
     ['src/qtio/qt_ops.cpp'],
     cpp_args: ['-fPIC', '-fvisibility=hidden'],
     include_directories: ['include/'],
-    dependencies: [qt6gui_dep, arrow_dep],
+    dependencies: [qt6gui_dep, arrow_dep, glog_dep],
     install: true,
     install_dir: vin_lib_dir,
   )
@@ -143,7 +144,7 @@ if get_option('BUILD_OPTIMS')
     ['src/saccade_policy/saccade_policy_io.cpp', 'src/saccade_policy/grad_heatmap.cpp'],
     cpp_args: ['-fPIC', '-fvisibility=hidden'],
     include_directories: ['include/'],
-    dependencies: [fdag_dep, arrow_dep],
+    dependencies: [fdag_dep, arrow_dep, glog_dep],
     install: true,
     install_dir: vin_lib_dir,
   )

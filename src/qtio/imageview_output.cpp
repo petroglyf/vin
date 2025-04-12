@@ -1,3 +1,5 @@
+#include <glog/logging.h>
+
 #include <QCoreApplication>
 #include <QHBoxLayout>
 #include <cstdint>
@@ -36,8 +38,8 @@ std::unique_ptr<int> QtViewer::update(const arrow::Tensor *image) {
         imagePanel->set_tensor(*image, visualization_mode::VIZ_RGB);
         break;
       default:
-        std::cerr << "Unable to visualize image with n_channels: "
-                  << image->shape()[0] << std::endl;
+        LOG(WARNING) << "Unable to visualize image with n_channels: "
+                     << image->shape()[0] << std::endl;
     }
   } else if (image != nullptr && image->shape().size() == 2 &&
              image->type_id() == arrow::Type::UINT32) {
@@ -70,6 +72,6 @@ std::unique_ptr<int> QtViewer::update(const arrow::Tensor *image) {
       }
     }
   } else
-    std::cerr << "Cannot visualize image. Invalid DLTensor in!\n";
+    LOG(ERROR) << "Cannot visualize image. Invalid DLTensor in!\n";
   return nullptr;
 }

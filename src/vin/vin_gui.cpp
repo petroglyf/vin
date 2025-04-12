@@ -1,6 +1,9 @@
 #include "vin/vin_gui.hpp"
 
 #include <QtCore/qglobal.h>
+#include <functional_dag/lib_spec_generated.h>
+#include <functional_dag/libutils.h>
+#include <glog/logging.h>
 
 #include <QCheckBox>
 #include <QFileDialog>
@@ -10,9 +13,6 @@
 #include <QSpinBox>
 #include <QWidget>
 #include <fstream>
-
-#include "functional_dag/lib_spec_generated.h"
-#include "functional_dag/libutils.h"
 
 using namespace fn_dag;
 
@@ -42,31 +42,31 @@ const T *__offset_to_table(const flatbuffers::FlatBufferBuilder &_builder,
   vector<::flatbuffers::Offset<construction_option>> options;
 
   for (auto option : _construction_options) {
-    std::cout << option->name << ": ";
+    LOG(INFO) << option->name << ": ";
     switch (option->type) {
       case OPTION_TYPE_STRING:
-        std::cout << option->value.str_value << std::endl;
+        LOG(INFO) << option->value.str_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type, 0, false,
                                      option->value.str_value.c_str())));
         break;
       case OPTION_TYPE_INT:
-        std::cout << option->value.int_value << std::endl;
+        LOG(INFO) << option->value.int_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type,
                                      option->value.int_value, false, nullptr)));
         break;
       case OPTION_TYPE_BOOL:
-        std::cout << option->value.bool_value << std::endl;
+        LOG(INFO) << option->value.bool_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type, 0,
                                      option->value.bool_value, nullptr)));
         break;
       default:
-        std::cerr << "Unhandled option type: " << option->type << std::endl;
+        LOG(ERROR) << "Unhandled option type: " << option->type << std::endl;
     }
   }
   wires.push_back(Createstring_mappingDirect(_builder, "input_tensor",
@@ -80,8 +80,8 @@ void main_window::populate_options_panel(QListWidgetItem *value,
                                          QScrollArea *scroll_area) {
   m_curr_lib_spec = value->data(Qt::UserRole).value<const node_prop_spec *>();
   if (m_curr_lib_spec == nullptr) {
-    std::cerr << "No library spec found when populating the options panel!"
-              << std::endl;
+    LOG(ERROR) << "No library spec found when populating the options panel!"
+               << std::endl;
     return;
   }
   m_construction_options.clear();
@@ -179,7 +179,7 @@ void main_window::populate_options_panel(QListWidgetItem *value,
         hlayout->addWidget(checkbox);
       } break;
       default: {
-        std::cerr << "Unknown option type: " << option.type << std::endl;
+        LOG(ERROR) << "Unknown option type: " << option.type << std::endl;
         continue;
       }
     }
@@ -244,7 +244,7 @@ void main_window::refresh_options_panel(QListWidgetItem *value) {
 }
 
 void main_window::handle_create() {
-  std::cout << "Create pressed\n";
+  LOG(INFO) << "Create pressed\n";
 
   auto node_spec_offset =
       __create_node_spec(m_builder, m_curr_lib_spec->guid.m_id, m_node_name,
@@ -260,8 +260,8 @@ void main_window::handle_create() {
       m_nodes.push_back(node_spec_offset);
       break;
     default:
-      std::cerr << "Unknown node type: " << m_curr_lib_spec->module_type
-                << std::endl;
+      LOG(ERROR) << "Unknown node type: " << m_curr_lib_spec->module_type
+                 << std::endl;
       break;
   }
 
@@ -274,7 +274,7 @@ void main_window::handle_create() {
     QList<QTreeWidgetItem *> parent_options = m_dag_tree->findItems(
         m_parent_node_name.c_str(), Qt::MatchFlag::MatchRecursive);
     if (parent_options.size() != 1) {
-      std::cout << " Parent not found " << m_parent_node_name << std::endl;
+      LOG(INFO) << " Parent not found " << m_parent_node_name << std::endl;
       // return ERR_PARENT_ABSENT;
       return;
     }
@@ -288,7 +288,7 @@ void main_window::save() {
   QString filename = QFileDialog::getSaveFileName(
       this, tr("Save file to.."), ".", tr("JSON Files (*.json)"));
   if (filename.length() > 0) {
-    std::cout << "Saving to : " << filename.toStdString() << std::endl;
+    LOG(INFO) << "Saving to : " << filename.toStdString() << std::endl;
 
     auto pipe_spec_direct =
         fn_dag::Createpipe_specDirect(m_builder, &m_sources, &m_nodes);
@@ -301,8 +301,8 @@ void main_window::save() {
       my_file << *json;
       my_file.close();
     } else {
-      std::cerr << "Error: Unable to serialize the compute dag due to: "
-                << json.error() << std::endl;
+      LOG(ERROR) << "Error: Unable to serialize the compute dag due to: "
+                 << json.error() << std::endl;
     }
   }
 }
@@ -310,7 +310,7 @@ void main_window::save() {
 void main_window::load() {
   QString filename = QFileDialog::getOpenFileName(
       this, tr("Save file to.."), ".", tr("JSON Files (*.json)"));
-  std::cout << "Opening file : " << filename.toStdString() << std::endl;
+  LOG(INFO) << "Opening file : " << filename.toStdString() << std::endl;
 
   // TODO actually load
 }

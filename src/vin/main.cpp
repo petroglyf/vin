@@ -15,7 +15,9 @@
  * @license: MIT License
  */
 
+#define GLOG_CUSTOM_PREFIX_SUPPORT 1
 #include <functional_dag/libutils.h>
+#include <glog/logging.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -67,16 +69,31 @@ int initialize_library(fn_dag::library &dag_library) {
   }
 
   if (available_directories.size() == 0) return vin::error_codes::LIBRARY_EMPTY;
-  std::cout << "\nLoading library of modules.. !\n\t          "
-               "<library-name>:<guid>\n";
 
   dag_library.load_all_available_libs(available_directories);
 
   return vin::error_codes::NO_ERROR;
 }
 
+void glog_formatter_debug(std::ostream &s, const google::LogMessageInfo &m,
+                          void *) {
+  s << m.severity[0] << ' ' << std::setw(5) << m.thread_id << std::setfill('0')
+    << ' ' << m.filename << ':' << m.line_number << "]";
+}
+
+void glog_formatter_release(std::ostream &s, const google::LogMessageInfo &m,
+                            void *) {
+  s << m.severity[0] << ' ' << std::setw(2) << m.time.hour() << ':'
+    << std::setw(2) << m.time.min() << ':' << std::setw(2) << m.time.sec()
+    << "." << std::setw(6) << m.time.usec() << "]";
+}
+
 int main(int argc, char *argv[]) {
   // Construct the GUI
+  google::InitGoogleLogging(argv[0], &glog_formatter_release);
+  FLAGS_logtostdout = 1;
+  FLAGS_colorlogtostdout = 1;
+
 #ifndef CLI_ONLY
   QApplication app(argc, argv);
 #else
@@ -128,10 +145,10 @@ int main(int argc, char *argv[]) {
     std::string json_file = targetFile.toStdString();
 
     // Load the file to a string
-    std::cout << "Loading config from file: " << json_file << std::endl;
+    LOG(INFO) << "Loading config from file: " << json_file;
     std::ifstream file_stream(json_file);
     if (!file_stream.is_open()) {
-      std::cerr << "Error: Unable to open file " << json_file << std::endl;
+      LOG(ERROR) << "Error: Unable to open file " << json_file;
       return vin::error_codes::FILE_NOT_FOUND;
     }
     std::stringstream buffer;
@@ -149,10 +166,10 @@ int main(int argc, char *argv[]) {
         fn_manager = *reified_dag;
         // Print out what got loaded and started
         fn_manager->print_all_dags();
-        std::cout << "Setup complete\n\n";
+        LOG(INFO) << "Setup complete\n";
       } else {
-        std::cerr << "Error: Unable to deserialize the compute dag due to: "
-                  << reified_dag.error() << std::endl;
+        LOG(ERROR) << "Error: Unable to deserialize the compute dag due to: "
+                   << reified_dag.error() << std::endl;
         return vin::error_codes::INVALID_JSON_FORMAT;
       }
       do {
@@ -177,7 +194,7 @@ int main(int argc, char *argv[]) {
   }
 #else
   else {
-    std::cerr << "No spec to run!\n";
+    LOG(ERROR) << "No spec to run!\n";
   }
 #endif
   if (fn_manager != nullptr) {
