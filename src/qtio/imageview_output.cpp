@@ -1,5 +1,6 @@
 #include <glog/logging.h>
 
+#include <QApplication>
 #include <QCoreApplication>
 #include <QHBoxLayout>
 #include <cstdint>
@@ -16,6 +17,16 @@ QtViewer::QtViewer() : frame(nullptr), imagePanel(nullptr) {
   });
 }
 
+QtViewer::~QtViewer() {
+  if (frame != nullptr) {
+    frame->close();
+    frame->destroyed();
+    delete frame;
+    frame = nullptr;
+    imagePanel = nullptr;
+  }
+}
+
 void QtViewer::start() {
   frame = new QFrame();
   QHBoxLayout *lay = new QHBoxLayout(frame);
@@ -28,7 +39,7 @@ void QtViewer::start() {
 
 std::unique_ptr<int> QtViewer::update(const arrow::Tensor *image) {
   if (imagePanel == nullptr) return nullptr;
-
+  QWidgetList widglist = QApplication::topLevelWidgets();
   if (image != nullptr && image->shape().size() == 3) {
     switch (image->shape()[0]) {
       case 1:

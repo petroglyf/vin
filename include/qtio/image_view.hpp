@@ -102,6 +102,7 @@ class image_view : public QLabel {
 class QtViewer : public fn_dag::dag_node<arrow::Tensor, int> {
  public:
   QtViewer();
+  ~QtViewer();
 
   void start();
   std::unique_ptr<int> update(const arrow::Tensor *image);

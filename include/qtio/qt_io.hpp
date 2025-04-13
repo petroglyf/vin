@@ -21,7 +21,6 @@
 #include <QCamera>
 #include <QMediaCaptureSession>
 #include <QMediaPlayer>
-#include <QObject>
 #include <QThread>
 #include <QVideoSink>
 #include <QtWidgets/QLabel>
@@ -79,6 +78,7 @@ class qt_video_player : public QThread,
 
  private:
   qt_source m_source_type;
+  bool m_is_running;
 
   // Camera related objects
   QCamera *m_camera;  // Camera object for Qt
