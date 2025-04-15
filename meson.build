@@ -80,6 +80,7 @@ else
   vin_bin_deps = vin_bin_deps_full
 endif
 
+install_man('vin.7')
 
 vin_bin = executable(
   'vin',
