@@ -1,0 +1,20 @@
+.\" Manpage for vin.
+.\" Contact ndepalma@alum.mit.edu to correct errors or typos.
+.TH man 8 "15 April 2025" "1.0rc0" "vin man page"
+.SH NAME
+vin \- video processing harness for machine learning models
+.SH SYNOPSIS
+vin 
+[\fB\-c\fR \fIFILE_PATH\fR]
+[\fB\--config\fR \fIFILE_PATH\fR]
+.SH DESCRIPTION
+vin is similar to DLib or OpenCV. However it is built to be very minimal - with only torchscript and GPU models in between to encourage end-to-end pipelines only.
+.SH OPTIONS
+.TP
+.BR \-c ", " \-\-config =\fIFILE\fR
+Load the config file and skip running the GUI.
+.SH BUGS
+Bugs and issues:
+.BR https://github.com/petroglyf/vin/issues
+.SH AUTHOR
+Nick DePalma (ndepalma@alum.mit.edu)
