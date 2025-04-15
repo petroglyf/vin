@@ -1,16 +1,19 @@
 
 #include <glog/logging.h>
+#include <signal.h>
 
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QThread>
 #include <QVideoFrame>
 #include <iostream>
+#include <thread>
 
 #include "qtio/qt_io.hpp"
 
 qt_video_player::qt_video_player(std::string uri, int32_t width, int32_t height)
-    : m_camera(nullptr),
+    : m_is_running(true),
+      m_camera(nullptr),
       m_capture(nullptr),
       m_player(nullptr),
       m_specified_url(uri),
@@ -20,10 +23,6 @@ qt_video_player::qt_video_player(std::string uri, int32_t width, int32_t height)
       m_mutex{},
       m_frame_queue{} {
   start();
-}
-
-void stateChanged(QMediaPlayer::PlaybackState newState) {
-  LOG(INFO) << "Playback state changed: " << newState << std::endl;
 }
 
 void playerErrorOccurred(QMediaPlayer::Error error,
@@ -67,10 +66,6 @@ void qt_video_player::frame_changed(const QVideoFrame &frame) {
   m_condition.notify_one();
 }
 
-void mediaStatusChanged(QMediaPlayer::MediaStatus status) {
-  LOG(INFO) << "Media status changed: " << status << std::endl;
-}
-
 void qt_video_player::run() {
   if (m_specified_url == "camera")
     m_source_type = CAMERA;
@@ -100,10 +95,16 @@ void qt_video_player::run() {
     case VIDEO:
       m_player = new QMediaPlayer;
 
-      QObject::connect(m_player, &QMediaPlayer::playbackStateChanged,
-                       stateChanged);
       QObject::connect(m_player, &QMediaPlayer::mediaStatusChanged,
-                       mediaStatusChanged);
+                       [this](QMediaPlayer::MediaStatus status) {
+                         //  mediaStatusChanged(status);
+                         if (status == QMediaPlayer::MediaStatus::EndOfMedia) {
+                           LOG(INFO) << "End of media. Exiting." << std::endl;
+                           kill(getpid(), SIGHUP);
+                           this->m_is_running = false;
+                           this->m_condition.notify_one();
+                         }
+                       });
       QObject::connect(m_player, &QMediaPlayer::errorOccurred,
                        playerErrorOccurred);
 
@@ -117,29 +118,38 @@ void qt_video_player::run() {
       QObject::connect(
           m_surface_for_player, &QVideoSink::videoFrameChanged,
           [this](const QVideoFrame &frame) { this->frame_changed(frame); });
+      LOG(INFO) << "Playing video: " << m_specified_url << std::endl;
       m_player->play();
   }
   exec();
 }
 
 qt_video_player::~qt_video_player() {
+  requestInterruption();
+  exit(555);
+  wait(1000);
+
   if (m_player != nullptr) {
-    delete m_player;
     m_player = nullptr;
   }
 
   if (m_camera != nullptr) {
-    delete m_camera;
     m_camera = nullptr;
   }
 }
 
 std::unique_ptr<arrow::Tensor> qt_video_player::update() {
   std::unique_lock<std::mutex> lock(m_mutex);
+  if (!m_is_running) {
+    return nullptr;
+  }
 
   while (m_frame_queue.empty()) {
     // release lock as long as the wait and reaquire it afterwards.
     m_condition.wait(lock);
+    if (!m_is_running) {
+      return nullptr;
+    }
   }
   std::unique_ptr<arrow::Tensor> val;
   val = std::move(m_frame_queue.front());

@@ -18,11 +18,11 @@
 #define GLOG_CUSTOM_PREFIX_SUPPORT 1
 #include <functional_dag/libutils.h>
 #include <glog/logging.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include <QCommandLineParser>
-#include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <filesystem>
 #include <fstream>
@@ -88,9 +88,15 @@ void glog_formatter_release(std::ostream &s, const google::LogMessageInfo &m,
     << "." << std::setw(6) << m.time.usec() << "]";
 }
 
+void interruptHandler(int dummy) {
+  (void)dummy;
+  LOG(WARNING) << "Received signal " << dummy << std::endl;
+  SHOULD_QUIT = true;
+}
+
 int main(int argc, char *argv[]) {
   // Construct the GUI
-  google::InitGoogleLogging(argv[0], &glog_formatter_release);
+  google::InitGoogleLogging(argv[0], &glog_formatter_debug);
   FLAGS_logtostdout = 1;
   FLAGS_colorlogtostdout = 1;
 
@@ -119,6 +125,17 @@ int main(int argc, char *argv[]) {
 
   // Process the actual command line arguments given by the user
   parser.process(app);
+  struct sigaction sa;
+  sa.sa_handler = interruptHandler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+
+  sigaction(SIGINT, &sa, nullptr);
+  sigaction(SIGKILL, &sa, nullptr);
+  sigaction(SIGSTOP, &sa, nullptr);
+  sigaction(SIGHUP, &sa, nullptr);
+  sigaction(SIGQUIT, &sa, nullptr);
+  sigaction(SIGTSTP, &sa, nullptr);
 
   srand(time(NULL));
 
@@ -156,8 +173,11 @@ int main(int argc, char *argv[]) {
     std::string file_contents = buffer.str();
     file_stream.close();
 
+    app.quitOnLastWindowClosed();
+
     // This runs on a thread to avoid blocking the GUI
-    auto run_thread = std::async([&dag_library, &fn_manager, file_contents]() {
+    auto run_thread = std::async([&dag_library, &fn_manager, &app,
+                                  file_contents]() {
       // Waits for the GUI to come up first.
       std::this_thread::sleep_for(1000ms);
       // Parse the JSON and construct the dags
@@ -175,14 +195,19 @@ int main(int argc, char *argv[]) {
       do {
         std::this_thread::sleep_for(300ms);
       } while (!SHOULD_QUIT);
+      app.quit();
       return vin::error_codes::NO_ERROR;
     });
 
     auto status = run_thread.wait_for(6s);
     if (status != std::future_status::ready) {
       app.exec();
+      SHOULD_QUIT = true;
       run_thread.wait();
+
+      app.quit();
     }
+    app.closeAllWindows();
   }
 #ifndef CLI_ONLY
   else {
@@ -199,8 +224,15 @@ int main(int argc, char *argv[]) {
 #endif
   if (fn_manager != nullptr) {
     fn_manager->stahp();
+    std::this_thread::sleep_for(100ms);
     delete fn_manager;
     fn_manager = nullptr;
   }
+  app.closingDown();
+  app.quit();
+  app.exit();
+  QCoreApplication::exit(0);
+  QApplication::exit(0);
+  LOG(WARNING) << "Exiting main\n";
   return 0;
 }
