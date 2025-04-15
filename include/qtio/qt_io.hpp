@@ -27,7 +27,7 @@
 #include <functional_dag/dag_interface.hpp>
 #include <mutex>
 #include <queue>
-enum qt_source { VIDEO, CAMERA };
+enum qt_source { UNDEFINED, VIDEO, CAMERA, IMAGE };
 
 class qt_video_player : public QThread,
                         public fn_dag::dag_source<arrow::Tensor> {
@@ -91,6 +91,7 @@ class qt_video_player : public QThread,
   QVideoSink *m_surface_for_player;     // A surface for Qt to draw to
   uint32_t m_width;                     // The output width of the image
   uint32_t m_height;                    // The output height of the image
+  QImage m_image;                       // The image to be continually pumped
   std::mutex m_mutex;                   // A mutex to get/set the atomic image
   std::condition_variable m_condition;  // A condition variable for the mutex
   std::queue<std::unique_ptr<arrow::Tensor>>
