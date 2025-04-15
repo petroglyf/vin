@@ -14,7 +14,7 @@
 #include <iostream>
 #include <memory>
 
-typedef enum { UNDEFINED, RESIZE } OP;
+typedef enum { UNDEFINED, RESIZE, COLORSPACE_TRANSFORM } OP;
 const static fn_dag::GUID<fn_dag::node_prop_spec> __qt_op_guid =
     *fn_dag::GUID<fn_dag::node_prop_spec>::from_uuid(
         "1133483f-06b8-41e3-9a72-098cb4cd71b4");
@@ -24,10 +24,14 @@ class qt_op : public fn_dag::dag_node<arrow::Tensor, arrow::Tensor> {
   OP op_code;
   uint32_t m_width;
   uint32_t m_height;
+  uint32_t m_color_space;
 
  public:
-  qt_op(OP op, int32_t width, int32_t height)
-      : op_code(op), m_width(width), m_height(height) {}
+  qt_op(OP op, int32_t width, int32_t height, int32_t color_space)
+      : op_code(op),
+        m_width(width),
+        m_height(height),
+        m_color_space(color_space) {}
 
   ~qt_op() {}
 
@@ -42,6 +46,16 @@ class qt_op : public fn_dag::dag_node<arrow::Tensor, arrow::Tensor> {
           output_image =
               input_image.scaled(m_width, m_height, Qt::IgnoreAspectRatio,
                                  Qt::SmoothTransformation);
+        }
+        break;
+      case COLORSPACE_TRANSFORM:
+        switch (m_color_space) {
+          case 1:  // RGB
+            output_image = input_image.convertToFormat(QImage::Format_RGB888);
+            break;
+          case 2:  // BGR
+            output_image = input_image.convertToFormat(QImage::Format_BGR888);
+            break;
         }
         break;
       default:
@@ -87,7 +101,8 @@ extern "C" DL_EXPORT fn_dag::library_spec get_library_details() {
                                    "typically something basic. See description "
                                    "for potential options.",
                   .short_description = "Think of this like an OpenCV operator. "
-                                       "Supported options are (1) RESIZE IMAGE",
+                                       "Supported options are (1) RESIZE "
+                                       "IMAGE, (2) COLOR SPACE TRANSFORM",
               },
               fn_dag::option_spec{
                   .type = fn_dag::OPTION_TYPE::OPTION_TYPE_INT,
@@ -102,6 +117,14 @@ extern "C" DL_EXPORT fn_dag::library_spec get_library_details() {
                   .option_prompt = "Height of the image to resize to.",
                   .short_description = "Height of the image to resize to. Does "
                                        "nothing if value is negative.",
+              },
+              fn_dag::option_spec{
+                  .type = fn_dag::OPTION_TYPE::OPTION_TYPE_INT,
+                  .name = "color_space",
+                  .option_prompt = "Which color space to transform to.",
+                  .short_description =
+                      "Supported options include: (1) RGB, (2) BGR"
+                      "Does nothing if value is negative.",
               },
           },
   });
@@ -118,6 +141,7 @@ extern "C" DL_EXPORT bool construct_node(
     OP op_code = OP::UNDEFINED;
     int width = -1;
     int height = -1;
+    int color_space = -1;
     for (auto option : *spec.options()) {
       if (option->value()->type() == fn_dag::OPTION_TYPE_INT) {
         if (option->name()->string_view() == "operator") {
@@ -126,6 +150,8 @@ extern "C" DL_EXPORT bool construct_node(
           width = option->value()->int_value();
         } else if (option->name()->string_view() == "height") {
           height = option->value()->int_value();
+        } else if (option->name()->string_view() == "color_space") {
+          color_space = option->value()->int_value();
         }
       }
     }
@@ -134,7 +160,7 @@ extern "C" DL_EXPORT bool construct_node(
     if (spec.wires()->size() > 0) {
       std::string_view parent_node_name =
           spec.wires()->Get(0)->value()->string_view();
-      qt_op *new_filter = new qt_op(op_code, width, height);
+      qt_op *new_filter = new qt_op(op_code, width, height, color_space);
       if (auto parent_ret = manager.add_node(std::string(name), new_filter,
                                              std::string(parent_node_name));
           parent_ret.has_value()) {

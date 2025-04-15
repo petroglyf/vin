@@ -11,8 +11,12 @@
 
 #include "qtio/qt_io.hpp"
 
+constexpr std::array<std::string, 4> m_supported_img_formats = {"jpg", "png",
+                                                                "bmp", "jpeg"};
+
 qt_video_player::qt_video_player(std::string uri, int32_t width, int32_t height)
-    : m_is_running(true),
+    : m_source_type(UNDEFINED),
+      m_is_running(true),
       m_camera(nullptr),
       m_capture(nullptr),
       m_player(nullptr),
@@ -52,10 +56,14 @@ void qt_video_player::frame_changed(const QVideoFrame &frame) {
 
   std::lock_guard<std::mutex> lock(m_mutex);
 
+  QImage image2 = image.convertToFormat(QImage::Format_RGB888);
+  if (m_width > 0 && m_height > 0) {
+    image2 = image2.scaled(m_width, m_height, Qt::IgnoreAspectRatio,
+                           Qt::SmoothTransformation);
+  }
   int64_t height = image.height();
   int64_t width = image.width();
 
-  QImage image2 = image.convertToFormat(QImage::Format_RGB888);
   uint8_t *bits = image2.bits();
 
   auto buffer = std::make_shared<arrow::Buffer>(bits, width * height * 3);
@@ -69,8 +77,17 @@ void qt_video_player::frame_changed(const QVideoFrame &frame) {
 void qt_video_player::run() {
   if (m_specified_url == "camera")
     m_source_type = CAMERA;
-  else
-    m_source_type = VIDEO;
+  else {
+    std::string ext =
+        m_specified_url.substr(m_specified_url.find_last_of(".") + 1);
+    if (std::find(m_supported_img_formats.begin(),
+                  m_supported_img_formats.end(),
+                  ext) != m_supported_img_formats.end()) {
+      m_source_type = IMAGE;
+    } else {
+      m_source_type = VIDEO;
+    }
+  }
 
   switch (m_source_type) {
     case CAMERA: {
@@ -92,7 +109,18 @@ void qt_video_player::run() {
           [this](const QVideoFrame &frame) { this->frame_changed(frame); });
       m_camera->start();
     } break;
-    case VIDEO:
+    case IMAGE: {
+      m_image = QImage(m_specified_url.c_str())
+                    .convertToFormat(QImage::Format_RGB888);
+      if (m_width > 0 && m_height > 0) {
+        m_image = m_image.scaled(m_width, m_height, Qt::IgnoreAspectRatio,
+                                 Qt::SmoothTransformation);
+      } else {
+        m_width = m_image.width();
+        m_height = m_image.height();
+      }
+    } break;
+    case VIDEO: {
       m_player = new QMediaPlayer;
 
       QObject::connect(m_player, &QMediaPlayer::mediaStatusChanged,
@@ -120,6 +148,10 @@ void qt_video_player::run() {
           [this](const QVideoFrame &frame) { this->frame_changed(frame); });
       LOG(INFO) << "Playing video: " << m_specified_url << std::endl;
       m_player->play();
+    } break;
+    default: {
+      break;
+    }
   }
   exec();
 }
@@ -139,6 +171,21 @@ qt_video_player::~qt_video_player() {
 }
 
 std::unique_ptr<arrow::Tensor> qt_video_player::update() {
+  if (m_source_type == UNDEFINED) return nullptr;
+  if (m_source_type == IMAGE) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    if (m_image.isNull()) {
+      return nullptr;
+    }
+    QImage image = m_image.convertToFormat(QImage::Format_RGB888);
+    uint8_t *bits = image.bits();
+
+    auto buffer = std::make_shared<arrow::Buffer>(bits, m_width * m_height * 3);
+    std::vector<int64_t> shape = {3, m_height, m_width};
+    return std::make_unique<arrow::Tensor>(arrow::uint8(), buffer, shape);
+  }
+
+  // Video or camera type here --
   std::unique_lock<std::mutex> lock(m_mutex);
   if (!m_is_running) {
     return nullptr;
