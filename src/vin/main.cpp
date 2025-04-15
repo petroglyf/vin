@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
       // Waits for the GUI to come up first.
       std::this_thread::sleep_for(1000ms);
       // Parse the JSON and construct the dags
-      if (auto reified_dag = dag_library.fsys_deserialize(file_contents, true);
+      if (auto reified_dag = dag_library.fsys_deserialize(file_contents, false);
           reified_dag.has_value()) {
         fn_manager = *reified_dag;
         // Print out what got loaded and started

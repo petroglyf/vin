@@ -108,8 +108,8 @@ class QtViewer : public fn_dag::dag_node<arrow::Tensor, int> {
   std::unique_ptr<int> update(const arrow::Tensor *image);
 
  private:
-  QFrame *frame;
-  image_view *imagePanel;
+  QFrame *m_frame;
+  image_view *m_imagePanel;
 };
 
 }  // namespace vin
