@@ -42,24 +42,20 @@ const T *__offset_to_table(const flatbuffers::FlatBufferBuilder &_builder,
   vector<::flatbuffers::Offset<construction_option>> options;
 
   for (auto option : _construction_options) {
-    LOG(INFO) << option->name << ": ";
     switch (option->type) {
       case OPTION_TYPE_STRING:
-        LOG(INFO) << option->value.str_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type, 0, false,
                                      option->value.str_value.c_str())));
         break;
       case OPTION_TYPE_INT:
-        LOG(INFO) << option->value.int_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type,
                                      option->value.int_value, false, nullptr)));
         break;
       case OPTION_TYPE_BOOL:
-        LOG(INFO) << option->value.bool_value << std::endl;
         options.push_back(Createconstruction_optionDirect(
             _builder, option->name.c_str(),
             Createoption_valueDirect(_builder, option->type, 0,
@@ -244,8 +240,6 @@ void main_window::refresh_options_panel(QListWidgetItem *value) {
 }
 
 void main_window::handle_create() {
-  LOG(INFO) << "Create pressed\n";
-
   auto node_spec_offset =
       __create_node_spec(m_builder, m_curr_lib_spec->guid.m_id, m_node_name,
                          m_parent_node_name, m_construction_options);

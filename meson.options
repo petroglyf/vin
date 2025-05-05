@@ -33,3 +33,11 @@ option(
     value: true,
     description: 'Build optimisation algorithms support.',
 )
+
+option(
+    'BUILD_ONNX_NODE',
+    type: 'boolean',
+    value: false,
+    description: 'Build support for onnx runtime nodes.',
+)
+

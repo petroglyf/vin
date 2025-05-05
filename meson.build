@@ -5,7 +5,6 @@ project(
     'c_std=c23',
     'cpp_std=c++23',
     'warning_level=3',
-    'werror=true',
   ],
   version: '1.0rc1',
   license: 'MIT',
@@ -27,6 +26,9 @@ endif
 
 add_global_arguments('-DVIN_VERSION='+meson.project_version(), language : 'cpp')
 add_global_arguments('-DVIN_LIB_DIR='+vin_lib_dir, language : 'cpp')
+add_global_arguments('-U_LIBCPP_ENABLE_ASSERTIONS', language : 'cpp')
+# add_global_arguments('-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST', language : 'cpp')
+
 ##########################################
 ####### Find the needed packages #########
 ##########################################
@@ -43,6 +45,7 @@ qt6core_dep = dependency('qt6', modules : 'Core')
 qt6gui_dep = dependency('qt6', modules : 'Gui')
 qt6widgets_dep = dependency('qt6', modules : 'Widgets')
 qt6multim_dep = dependency('qt6', modules : 'Multimedia')
+onnx_dep = dependency('onnxruntime', required: false)
 
 if fs_fn.is_dir('build/include') == false
   run_command(find_program('mkdir'), '-p', 'build/include', check: true)
@@ -57,6 +60,13 @@ error_codes_h = custom_target(
     output : 'error_codes.h',
     input : 'flatbufs/error_codes.fbs',
     command : ['flatc', '--reflect-types', '-o', 'include/vin/', '--no-prefix', '--filename-suffix', '', '--cpp', '@INPUT@'],
+)
+
+tensor_h = custom_target(
+    'tensor_generate',
+    output : 'tensor.h',
+    input : 'flatbufs/tensor.fbs',
+    command : ['flatc', '--reflect-types', '-o', 'include/vin/', '--no-prefix', '--gen-mutable', '--filename-suffix', '', '--cpp', '@INPUT@'],
 )
 
 # Add the generated header to the include paths
@@ -137,15 +147,30 @@ if get_option('BUILD_QTOP')
 endif
 
 ##############################
-###### Saccade library  #########
+#### Saccade tools node  #####
 ##############################
 if get_option('BUILD_OPTIMS')
-  qtop_lib = shared_library(
+  saccade_lib = shared_library(
     'saccade',
     ['src/saccade_policy/saccade_policy_io.cpp', 'src/saccade_policy/grad_heatmap.cpp'],
     cpp_args: ['-fPIC', '-fvisibility=hidden'],
     include_directories: ['include/'],
     dependencies: [fdag_dep, arrow_dep, glog_dep],
+    install: true,
+    install_dir: vin_lib_dir,
+  )
+endif
+
+##############################
+######## ONNX node  ##########
+##############################
+if get_option('BUILD_ONNX_NODE')
+  onnx_lib = shared_library(
+    'onnx_node',
+    ['src/inference/inference_onnx.cpp', 'src/inference/onnx_utils.cpp', tensor_h],
+    cpp_args: ['-fPIC', '-fvisibility=hidden'],
+    include_directories: ['include/'],
+    dependencies: [fdag_dep, arrow_dep, glog_dep, onnx_dep],
     install: true,
     install_dir: vin_lib_dir,
   )
