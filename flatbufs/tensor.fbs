@@ -1,0 +1,29 @@
+namespace vin;
+
+/// Potential tensor types
+enum tensor_type : uint16 {
+  UNDEFINED=0,
+  ///< Unknown or unspecified type. Ideally this is rarely used.
+  UINT8,
+  ///< Unsigned byte 8-bits
+  UINT16,
+  ///< Unsigned short 16-bits
+  UINT32,
+  ///< Unsigned integer 32-bits
+  UINT64,
+  ///< Unsigned long 64-bits
+  DOUBLE,
+  ///< For floating point precision, only double is supported
+}
+
+/// The most basic needs for a tensor specification. Users will need to construct a wrapper.
+table Tensor {
+  data:[float64];
+  ///< A packed buffer for the tensor data. Tensors are enforced to be float64.
+  shape:[uint16] (required);
+  ///< The shape of the tensor.
+  type:tensor_type;
+  ///< The type of the tensor.
+}
+
+root_type Tensor;
