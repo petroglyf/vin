@@ -3,10 +3,10 @@ Priority: optional
 Maintainer: Nick DePalma <ndepalma@alum.mit.edu>
 Standards-Version: 4.6.2
 Homepage: https://github.com/petroglyf/vin
-Architecture: arm64
+Architecture: amd64
 Multi-Arch: foreign
 Description: VIN is a set of tools to integrate simple video into minimal DAGs for processing.
 Section: science
 Version: 1.0rc1
 Bugs: https://github.com/petroglyf/vin/issues
-Depends: qt6-multimedia-dev (>=6.4), qt6-base-dev (>=6.4), functional-dag (>=1.0), libgl1-mesa-dev (>=24.2)
+Depends: qt6-multimedia-dev (>=6.4), qt6-base-dev (>=6.4), functional-dag (>=1.0), libgl1-mesa-dev (>=24.2), libflatbuffers2 (>=2.0), libgoogle-glog0v6
