@@ -18,11 +18,9 @@ class Vin < Formula
   depends_on "glog" => :build
   depends_on "functional-dag" => :build
   depends_on "clang-tidy" => :test
-
-  
   
   def install
-    system "meson", "setup", "build", *std_meson_args
+    system "meson", "setup", "build", "-DBUILD_ONNX_NODE=true", *std_meson_args
     system "ninja", "-C", "build"
     system "meson", "install", "-C", "build"
   end
