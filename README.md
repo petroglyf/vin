@@ -1,10 +1,11 @@
 
 
 <p align="center" style="font-size: 30pt;">
-  <img border=0 src="https://github.com/user-attachments/assets/bc43c4e7-3e94-4a42-8f8e-9a29533fe56e" width="30%" height="30%"/> <br />
+  <img border=0 src="https://github.com/user-attachments/assets/8afe8146-5e0d-49fe-b1e4-70bef9aba2ae" width="30%" height="30%"/> <br />
   vin : The Video INput library
 </p>
-  
+
+
 The vin library is minimal (Qt and Apache Arrow only) support for media capture and visualization. It is meant to bookend the [functional-dag](https://github.com/petrogly-ph/functional-dag/) so that other cognitive components can rely on these pieces and build the real architecture. 
 
 ## Why would you want this?
